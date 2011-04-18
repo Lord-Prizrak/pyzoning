@@ -1,4 +1,4 @@
-﻿#!python
+ #!python
 # -*- coding: utf-8 -*-
  
 ## i, j - номер гекса. столбец и строка. Гексы строятся со сдвигом строки
@@ -9,12 +9,10 @@
 ## str_hgt - полтора self.oo_rad (высота строки состоящей из гексов).
 ## oo_rad2 - половина радиуса описанного круга.
 
-from math import cos, pi, sqrt
+## Сей код получён путем тупого перевода кода на Ruby в код на Python.
+## Внизу самом код ВРЕМЕННЫЙ чисто только для отладки, потом будет заменён на что-то более адекватное.
 
-class Point:
-   def __init__(self, x,y):
-       self.x = x
-       self.y = y
+from math import cos, pi, sqrt
 
 class Hex:  
     def __init__(self, size, pust=0):
@@ -80,80 +78,6 @@ class Hex:
         return ( int(i), int(j) )
 #        x = self.vo_rad+ i*self.hex_size +(self.vo_rad)*(j%2)
 #        y = self.oo_rad+ j*self.str_hgt
-
-
-
-
-    ## #horizintal left cross over direction algorithm
-    ## def InsidePolygon(self, Point polygon, int N, Point p, int bound)
-    ## {
-        ## #cross points count of x
-        ## int __count = 0;
-        ## #neighbour bound vertices
-        ## Point p1, p2;
-        ## #left vertex
-        ## p1 = polygon[0];
-        ## #check all rays
-        ## for(int i = 1; i <= N; ++i){
-            ## #point is an vertex
-            ## if(p == p1) return bound;
-            ## #right vertex
-            ## p2 = polygon[i % N];
-            ## #ray is outside of our interests
-            ## if(p.y < MIN(p1.y, p2.y) || p.y > MAX(p1.y, p2.y)){
-                ## #next ray left point
-                ## p1 = p2; continue;
-            ## }
-            ## #ray is crossing over by the algorithm (common part of)
-            ## if(p.y > MIN(p1.y, p2.y) && p.y < MAX(p1.y, p2.y)){
-                ## #x is before of ray
-                ## if(p.x <= MAX(p1.x, p2.x))
-                ## {
-                    ## #overlies on a horizontal ray
-                    ## if(p1.y == p2.y && p.x >= MIN(p1.x, p2.x)) return bound;
-                    ## #ray is vertical
-                    ## if(p1.x == p2.x){
-                        ## #overlies on a ray
-                        ## if(p1.x == p.x) return bound;
-                        ## #before ray
-                        ## else ++__count;
-                    ## }
-                    ## #cross point on the left side
-                    ## else{
-                        ## #cross point of x
-                        ## double xinters = (p.y - p1.y) * (p2.x - p1.x) / (p2.y - p1.y) + p1.x;
-                        ## #overlies on a ray
-                        ## if(fabs(p.x - xinters) < __DBL_EPSILON__) return bound;
-                        ## #before ray
-                        ## if(p.x < xinters) ++__count;
-                    ## }
-                ## }
-            ## }
-            ## #special case when ray is crossing through the vertex
-            ## else{
-                ## #p crossing over p2
-                ## if(p.y == p2.y && p.x <= p2.x){
-                    ## #next vertex
-                    ## const Point& p3 = polygon[(i+1) % N];
-                    ## #p.y lies between p1.y & p3.y
-                    ## if(p.y >= MIN(p1.y, p3.y) && p.y <= MAX(p1.y, p3.y)){
-                        ## ++__count;
-                    ## }
-                    ## else{
-                        ## __count += 2;
-                    ## }
-                ## }
-            ## }
-            ## #next ray left point
-            ## p1 = p2;
-        ## }
-        ## #EVEN
-        ## if(__count % 2 == 0) return(OUTSIDE);
-        ## #ODD
-        ## else return(INSIDE);
-##}
-
-
 
 
     def distance(self, hex1, hex2):
