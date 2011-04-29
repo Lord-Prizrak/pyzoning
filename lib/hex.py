@@ -31,7 +31,7 @@ RIGHT   = 5
 class Hex:
     """ Класс для обслуживания поля из гексагональных ячеек. Ячейки могут
     быть не влотную друг к другу.
-    
+
     i, j - номер гекса. столбец и строка. Гексы строятся со сдвигом строки
     (каждая нечетная строка сдвинута относительно четной на половину ширины)
     hex_size - расстояние между центрами противоположных граней - ширина гекса.
@@ -41,7 +41,7 @@ class Hex:
     oo_rad2 - половина радиуса описанного круга.
     distation - расстояние между гексамиб по умолчанию = 0
     """
-    
+
     def __init__(self, size, dist=0):
         """ Инициализация. Принимает размер гекса по ширине size, 
         расстояние между гексами dist"""
@@ -101,8 +101,8 @@ class Hex:
                 return hex
 
         return (-1, -1)
-    
-    
+
+
     def inhex(self, point, hex, direct=[]):
         """ Определяет принадлежит-ли точка point гексу hex
         В direct заносится направление на соседа, ближайшего к точке
@@ -196,6 +196,7 @@ class Hex:
         #!! Переделать.
         i1, j1 = hex1
         j2, j2 = hex2
+        
         return (j1-j2).abs + (j1 - j2).abs
 
 
@@ -203,11 +204,6 @@ class Hex:
     ## def field_size(self, hex_in_row, hex_in_column):
         ## """ считает размер поля в пикселях. """
         ## return (self.hex_size*hex_in_row+self.hex_size/2+5, self.str_hgt*hex_in_column+self.oo_rad2+5)
-
-   ## def path(self, hex1, hex2, barriers, map_size):
-        ## """ Ищет путь. С учетом препятствий(А*). """
-        ## find_path(hex1, hex2, barriers, map_size)
-    ## end
 
     ## def path_no_barriers(self, hex1, hex2):
         ## """ Ищет путь. Без учёта препятствий """
@@ -263,7 +259,7 @@ class Hex:
 ## end
 ########## /Ещё не обрабатывал.##########################################
 
-if __name__ == '__main__':
+def main():
     import pygame, sys
     pygame.init()
     screen = pygame.display.set_mode((640, 480))
@@ -313,3 +309,6 @@ if __name__ == '__main__':
                     #screen.blit(text, pol)
     
                 pygame.display.flip()
+
+if __name__ == '__main__':
+    main()

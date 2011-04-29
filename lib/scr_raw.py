@@ -2,7 +2,7 @@
 
 import globals
 
-class SCR_RAW:
+class SCR_Hex:
     state = SCR_KOS
     abort = False
 
@@ -14,7 +14,7 @@ class SCR_RAW:
         background.fill((0, 0, 0))
         self.screen.blit(background, (0, 0))
         pygame.display.flip()
-        pygame.display.set_caption("Зонирование: Начало.")
+
 
     def _loop_input(self):
         for event in pygame.event.get():
@@ -24,8 +24,7 @@ class SCR_RAW:
             else:
                 pass
 
+
     def startMainLoop(self):
         while not self.abort:
             self._loop_input()
-
-
