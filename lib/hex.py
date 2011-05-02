@@ -16,10 +16,6 @@
 #!!    только по необходимости
 #!! 5. Вычистить код.
 
-#M Стоит-ли добавлять хранение центров гексов в классе, для определения гекса по
-#M  экранным координатам? Т.е. через определение к какому центру точка окажется ближе.
-#M  при сплошной сетке этот метод более удачен, чем любой другой.
-
 from math import cos, pi, sqrt
 
 CENTER  = 1
@@ -269,46 +265,60 @@ def main():
     background.fill((0, 0, 0))
     screen.blit(background, (0,0))
     font = pygame.font.Font(None, 20)
-    
+
     HEX_DIST = 20
     HEX_SIZE = 120
     HEX_SIZE2 = HEX_SIZE/2.
     HEX_OO = HEX_SIZE2 / (sqrt(3)/2)
     
+    surf = pygame.Surface(screen.get_size())
+    surf = background.convert_alpha()
+
     pole = Hex(HEX_SIZE, HEX_DIST)
     for i in range(3):
         for j in range(3):
             x, y = pole.center( (i,j) )
             points = pole.polygon( (i,j) )
-            pygame.draw.polygon(screen, (255,255,255), points, 1)
-            pygame.draw.line(screen, (255,255,255), (x,y), (x,y), 1)#центральная точка
+            pygame.draw.polygon(surf, (255,255,255), points, 1)
+            pygame.draw.line(surf, (255,255,255), (x,y), (x,y), 1)#центральная точка
             text = font.render(str(i)+":"+str(j), 1, (250, 250, 250))
-            screen.blit(text, (x,y))
+            surf.blit(text, (x,y))
 
             ## rx = int( round(x) )
             ## ry = int( round(y) )
             ## pygame.draw.circle(screen, (255,0,255), (rx,ry), int( round(HEX_SIZE2) ),1)
             ## pygame.draw.circle(screen, (0,255,0), (rx,ry), int( round(HEX_OO) ), 1)
 
+    screen.blit(surf, (0,0))
     pygame.display.flip()
+    
+    surface3 = pygame.Surface( (HEX_SIZE+2, HEX_OO*2+2) )
+    surface3 = surface3.convert()
+    pygame.draw.polygon(surface3, (50,50,105), pole.polygon((0,0)), 4)
+    colorkey = surface3.get_at( (0,0) )
+    surface3.set_colorkey( colorkey, pygame.RLEACCEL )
     
     while 1:
         for i in pygame.event.get(): # Перебор в списке событий
             if i.type == pygame.QUIT: # Обрабатываем событие шечка по крестику закрытия окна
                 sys.exit()
             if i.type == pygame.MOUSEBUTTONDOWN:
+                screen.blit(surf, (0,0))
                 point = i.pos
                 hex = pole.index(point)
                 poligon = pole.polygon(hex)
     
                 pygame.draw.polygon(screen, (255,15,105), poligon, 2)
                 pygame.draw.line(screen, (255,255,255), point, point, 1)
-    
+
+                qw,qe = pole.center(hex)
+                screen.blit(surface3, (qw-HEX_SIZE/2, qe-HEX_OO) )
                 #for pol in poligon:
                     #text = font.render(str(int(pol[0]))+":"+str(int(pol[1])), 0, (250, 250, 250))
                     #screen.blit(text, pol)
     
                 pygame.display.flip()
+
 
 if __name__ == '__main__':
     main()

@@ -8,7 +8,7 @@ class Game:
 
     def load_image(self,file):
         "loads an image, prepares it for play"
-        #file = os.path.join('../data', file)
+        file = os.path.join('data', file)
         try:
             surface = pygame.image.load(file)
         except pygame.error:
@@ -19,7 +19,7 @@ class Game:
     def __init__(self):
         pygame.init()
         self.screen = pygame.display.set_mode(SCREEN_SIZE)
-        pygame.display.set_icon(self.load_image('lib\\icon.png'))
+        pygame.display.set_icon(self.load_image('icon.png'))
         pygame.display.set_caption("Зонирование: Начало.")
         background = pygame.Surface(self.screen.get_size())
         background = background.convert()
