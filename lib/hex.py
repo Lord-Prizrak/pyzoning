@@ -255,7 +255,7 @@ class Hex:
 ########## /Ещё не обрабатывал.##########################################
 
 def main():
-    import pygame, sys, globals
+    import pygame, sys
     pygame.init()
     screen = pygame.display.set_mode((640, 480))
     pygame.display.set_caption('HEX Library example')
@@ -270,50 +270,35 @@ def main():
     HEX_SIZE2 = HEX_SIZE/2.
     HEX_OO = HEX_SIZE2 / (sqrt(3)/2)
     
-    surfmain = pygame.Surface(screen.get_size())
-    surfmain = background.convert_alpha()
-
     pole = Hex(HEX_SIZE, HEX_DIST)
     for i in range(3):
         for j in range(3):
-            x, y = pole.center( (i,j) )
+            hex = pole.center( (i,j) )
             points = pole.polygon( (i,j) )
-            pygame.draw.polygon(surfmain, (255,255,255), points, 1)
-            pygame.draw.line(surfmain, (255,255,255), (x,y), (x,y), 1)#центральная точка
+            pygame.draw.polygon(screen, (255,255,255), points, 1)
+            pygame.draw.line(screen, (255,255,255), hex, hex, 1)#центральная точка
             text = font.render(str(i)+":"+str(j), 1, (250, 250, 250))
-            surfmain.blit(text, (x,y))
+            screen.blit(text, hex)
 
-    screen.blit(surfmain, (0,0))
+    screen.blit(screen, (0,0))
     pygame.display.flip()
-    
-    surf_hex = pygame.Surface( (HEX_SIZE+5, HEX_OO*2+5) )
-    surf_hex = surf_hex.convert()
-    rect1 = pygame.draw.polygon(surf_hex, (50,50,255), pole.polygon((0,0)))
-    rect1 = pygame.draw.polygon(surf_hex, (50,50,255), pole.polygon((0,0)),4)
-    colorkey = surf_hex.get_at( (0,0) )
-    surf_hex.set_colorkey( colorkey, pygame.RLEACCEL )
     
     while 1:
         for i in pygame.event.get(): # Перебор в списке событий
             if i.type == pygame.QUIT: # Обрабатываем событие шечка по крестику закрытия окна
                 sys.exit()
             if i.type == pygame.MOUSEBUTTONDOWN:
-                screen.blit(surfmain, (0,0))
                 point = i.pos
                 hex = pole.index(point)
                 if (hex[0] == -1) or (hex[1] == -1): continue
                 poligon = pole.polygon(hex)
     
+                pygame.draw.polygon(screen, (50,250,55), poligon)
+
                 pygame.draw.polygon(screen, (255,15,105), poligon, 2)
                 pygame.draw.line(screen, (255,255,255), point, point, 1)
 
-                pygame.draw.polygon(screen, (50,250,55), poligon)
                 pygame.draw.polygon(screen, (50,250,55), poligon,4)
-                screen.blit(surf_hex, (poligon[5][0], poligon[0][1]) )
-                #screen.blit(surf_hex, (qw-HEX_SIZE/2, qe-HEX_OO) )
-                #for pol in poligon:
-                    #text = font.render(str(int(pol[0]))+":"+str(int(pol[1])), 0, (250, 250, 250))
-                    #screen.blit(text, pol)
     
                 pygame.display.flip()
 
