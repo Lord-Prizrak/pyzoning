@@ -3,6 +3,8 @@
 from globals import *
 import screenhex
 
+global Resources
+
 class Game:
     """ основной класс игры. """
     
@@ -21,10 +23,12 @@ class Game:
         self.screen.blit(self.background, (0, 0))
 
         surf = pygame.Surface(self.screen.get_size())
-        self.scrh = screenhex.SCRHex( surf )
+        self.scr_h = screenhex.SCRHex( surf )
         pygame.clock = pygame.time.Clock()
 
         pygame.display.flip()
+        
+        Resources = check_res
 
 
     def start(self):
@@ -33,6 +37,7 @@ class Game:
             pygame.clock.tick( 60 )
             self.checkevent()
             self.redraw()
+            pygame.display.flip()
 
 
     def checkevent(self):
@@ -48,4 +53,17 @@ class Game:
     def redraw(self):
         """ Перерисовка экрана. """
         self.screen.blit( self.background, (0,0) )
-        self.screen.blit( self.scrh.draw(), (0, 0) )
+        srf = self.scr_h.draw()
+        self.screen.blit( srf, (0, 0) )
+
+
+class Planet:
+    """ Клас планеты. """
+    def __init__(self):
+        image = load_image("palenet\planet1.png")
+
+    
+class Siur:
+    """ Класс сиура. Т.е. энерго-объединения планет в блоки по шесть. """
+    def __init__(self):
+        pass

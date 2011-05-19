@@ -5,6 +5,11 @@ import pygame
 
 DATA_DIR = "Data"
 
+def check_res():
+    files = os.listdir('.')
+    resources = files
+    return resources
+
 def load_image(file):
     """ Загрузка изображений. Возвращает surface """
     file = os.path.join(DATA_DIR, file)
