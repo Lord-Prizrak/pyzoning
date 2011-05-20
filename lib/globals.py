@@ -4,11 +4,13 @@ import os
 import pygame
 
 DATA_DIR = "Data"
+RES = object()
 
-def check_res():
-    files = os.listdir('.')
-    resources = files
-    return resources
+def loadres():
+    if __RES == Null:
+        __RES = Resources()
+    return __RES
+
 
 def load_image(file):
     """ Загрузка изображений. Возвращает surface """
@@ -18,3 +20,10 @@ def load_image(file):
     except pygame.error:
         raise SystemExit, "Could not load image '%s' %s"%(file, pygame.get_error())
     return surface.convert()
+
+
+class Resources:
+    def __init__(self):
+        files = os.listdir('.')
+        self.resources = files
+        return resources
