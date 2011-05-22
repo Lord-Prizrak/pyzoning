@@ -27,8 +27,6 @@ class Game:
         pygame.clock = pygame.time.Clock()
 
         pygame.display.flip()
-        
-        Resources = check_res
 
 
     def start(self):
@@ -60,7 +58,8 @@ class Game:
 class Planet:
     """ Клас планеты. """
     def __init__(self):
-        image = load_image("palenet\planet1.png")
+        loadres = loadres()
+        image = loadres.rndImage("planet")
 
     
 class Siur:

@@ -3,7 +3,7 @@
 import os
 import pygame
 
-DATA_DIR = "Data"
+DATA_DIR = "data"
 RES = object()
 
 def loadres():
@@ -27,3 +27,6 @@ class Resources:
         files = os.listdir('.')
         self.resources = files
         return resources
+
+    def RndImage(restype=""):
+        return self.images[restype][random]
