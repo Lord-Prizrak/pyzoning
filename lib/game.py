@@ -1,9 +1,9 @@
 ﻿# -*- coding: utf-8 -*-
 
 from globals import *
+from resources import *
 import screenhex
 
-global Resources
 
 class Game:
     """ основной класс игры. """
@@ -13,12 +13,15 @@ class Game:
 
     def __init__(self):
         """ Инициализация. """
+
+        resc = loadres()
+
         pygame.init()
         self.screen = pygame.display.set_mode(self.SCREEN_SIZE)
-        pygame.display.set_icon(load_image('icon.png'))
+        pygame.display.set_icon( resc.Image('icon.png') )
         pygame.display.set_caption("Зонирование: Начало.")
 
-        self.bgimage = load_image("background.png")
+        self.bgimage = resc.Image("background.png")
         self.background = pygame.transform.scale(self.bgimage, self.SCREEN_SIZE)
         self.screen.blit(self.background, (0, 0))
 
@@ -27,6 +30,8 @@ class Game:
         pygame.clock = pygame.time.Clock()
 
         pygame.display.flip()
+
+        planet = Planet()
 
 
     def start(self):
@@ -58,8 +63,8 @@ class Game:
 class Planet:
     """ Клас планеты. """
     def __init__(self):
-        loadres = loadres()
-        image = loadres.rndImage("planet")
+        resc = loadres()
+        image = resc.rndImage("planet")
 
     
 class Siur:
