@@ -17,9 +17,9 @@ def loadres():
 
 class Resources:
     """ Класс для работы с ресурсами """
-    
+
     resources = {}
-    
+
     def __init__(self):
         """ Инициализируем """
         random.seed()
@@ -32,6 +32,7 @@ class Resources:
             pas = "data"
         else:
             pas = os.path.join("data", restype)
+
         name = random.choice( self.resources[pas].keys() )
         return self.Image(name, restype)
 
@@ -42,6 +43,7 @@ class Resources:
             restype = "data"
         else:
             restype = os.path.join("data", restype)
+
         surface = pygame.image.load( os.path.join(restype, name) )
         return surface.convert()
 
@@ -52,8 +54,10 @@ class Resources:
         for dirname in dirs:
             files = os.listdir(dirname)
             self.resources[dirname] = {}
+
             for name in files:
                 if os.path.isfile(os.path.join(dirname,name)):
                     self.resources[dirname][name] = os.path.join(dirname,name)
+
                 if os.path.isdir(os.path.join(dirname,name)):
                     dirs.append(os.path.join(dirname,name))

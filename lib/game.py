@@ -27,17 +27,15 @@ class Game:
 
         surf = pygame.Surface(self.screen.get_size())
         self.scr_h = screenhex.SCRHex( surf )
-        pygame.clock = pygame.time.Clock()
+        self.clock = pygame.time.Clock()
 
         pygame.display.flip()
-
-        planet = Planet()
 
 
     def start(self):
         """ Основной цикл. """
         while not self.abort:
-            pygame.clock.tick( 60 )
+            self.clock.tick( 60 )
             self.checkevent()
             self.redraw()
             pygame.display.flip()
@@ -49,8 +47,10 @@ class Game:
             #print event
             if (event.type == pygame.QUIT) or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                 self.abort = True
-            else:
-                pass
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                self.scr_h.input(event)
+            elif event.type == pygame.MOUSEMOTION:
+                self.scr_h.input(event)
 
 
     def redraw(self):
@@ -59,6 +59,10 @@ class Game:
         srf = self.scr_h.draw()
         self.screen.blit( srf, (0, 0) )
 
+        font = pygame.font.Font(None, 20)
+        text = font.render( str(self.clock.get_fps())+" "+str(self.clock.get_time()), 1, (250, 250, 250) )
+        self.screen.blit(text, (10,self.SCREEN_SIZE[1]-20))
+
 
 class Planet:
     """ Клас планеты. """
@@ -66,7 +70,7 @@ class Planet:
         resc = loadres()
         image = resc.rndImage("planet")
 
-    
+
 class Siur:
     """ Класс сиура. Т.е. энерго-объединения планет в блоки по шесть. """
     def __init__(self):

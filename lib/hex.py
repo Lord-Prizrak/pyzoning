@@ -5,16 +5,12 @@
 ## Внизу самом код ВРЕМЕННЫЙ чисто только для отладки, потом будет заменён
 ## на что-то более адекватное для демонстрации
 
-#!! Нужно:
-#!! 1. Сделать возможность указания гексов не с начала, а с определённого гекса,
-#!!    т.е. что-бы была возможность двигать экран над большим полем. Например
-#!!    отображения гексов с (10,10) по (20,20)
-#!! 2. Перебрать ф-цию определения гекса по координатам точки
-#!! 3. Написать ф-ции: поиска соседей, поиска пути (без учёта препятствий и с ним),
-#!!    определения расстояния, ещё какие понадобятся.
-#!! 4. Придумать нормальный способ вывода информации для отладки, в консоль,
-#!!    только по необходимости
-#!! 5. Вычистить код.
+#Нужно:
+# 1. Перебрать ф-цию определения гекса по координатам точки
+# 2. Написать ф-ции: поиска соседей, поиска пути (без учёта препятствий и с ним),
+#    определения расстояния, ещё какие понадобятся.
+# 3. Придумать нормальный способ вывода информации для отладки, в консоль,
+#    только по необходимости
 
 from math import cos, pi, sqrt
 
@@ -24,10 +20,10 @@ DOWN    = 3
 LEFT    = 4
 RIGHT   = 5
 
+
 class Hex:
     """ Класс для обслуживания поля из гексагональных ячеек. Ячейки могут
     быть не влотную друг к другу.
-
     i, j - номер гекса. столбец и строка. Гексы строятся со сдвигом строки
     (каждая нечетная строка сдвинута относительно четной на половину ширины)
     hex_size - расстояние между центрами противоположных граней - ширина гекса.
@@ -35,8 +31,8 @@ class Hex:
     oo_rad - радиус описанного круга.
     str_hgt - полтора self.oo_rad (высота строки состоящей из гексов).
     oo_rad2 - половина радиуса описанного круга.
-    distation - расстояние между гексамиб по умолчанию = 0
-    """
+    distation - расстояние между гексами по умолчанию = 0 """
+
 
     def __init__(self, size, dist=0):
         """ Инициализация. Принимает размер гекса по ширине size, 
@@ -54,20 +50,19 @@ class Hex:
         x = self.vo_rad+ hex[0]*self.hex_size +(self.vo_rad+self.distation/2)*(hex[1]%2) +self.distation*hex[0]
         y = self.oo_rad+ hex[1]*self.str_hgt +self.distation*hex[1]
 
-        return  (x, y)
+        return  ( round(x), round(y) )
 
 
     def polygon(self, hex):
-        """ Вычисляет координаты вершин гекса, учитывая размеры.
-        Принимает индекс гекса hex."""
+        """ Вычисляет координаты вершин гекса, учитывая размеры. Принимает индекс гекса hex."""
         x, y = self.center(hex)
-        path  = [[x, y - self.oo_rad]]
-        path += [[x + self.vo_rad, y - self.oo_rad2]]
-        path += [[x + self.vo_rad, y + self.oo_rad2]]
-        path += [[x, y + self.oo_rad]]
-        path += [[x - self.vo_rad, y + self.oo_rad2]]
-        path += [[x - self.vo_rad, y - self.oo_rad2]]
-
+        path  = [[round(x), round(y - self.oo_rad)]]
+        path += [[round(x + self.vo_rad), round(y - self.oo_rad2)]]
+        path += [[round(x + self.vo_rad), round(y + self.oo_rad2)]]
+        path += [[round(x), round(y + self.oo_rad)]]
+        path += [[round(x - self.vo_rad), round(y + self.oo_rad2)]]
+        path += [[round(x - self.vo_rad), round(y - self.oo_rad2)]]
+        
         return path
 
 
@@ -191,7 +186,7 @@ class Hex:
         #!! Переделать.
         i1, j1 = hex1
         j2, j2 = hex2
-        
+
         return (j1-j2).abs + (j1 - j2).abs
 
 
@@ -254,6 +249,22 @@ class Hex:
 ## end
 ########## /Ещё не обрабатывал.##########################################
 
+
+def polygon(xy, size):
+    """ Вычисляет координаты вершин гекса."""
+    x, y = xy
+    vo_rad  = size / 2.
+    oo_rad  = vo_rad / ( sqrt(3)/2 )
+    oo_rad2 = oo_rad / 2
+    path  = [[round(x), round(y - oo_rad)]]
+    path += [[round(x + vo_rad), round(y - oo_rad2)]]
+    path += [[round(x + vo_rad), round(y + oo_rad2)]]
+    path += [[round(x), round(y + oo_rad)]]
+    path += [[round(x - vo_rad), round(y + oo_rad2)]]
+    path += [[round(x - vo_rad), round(y - oo_rad2)]]
+    return path
+
+
 def main():
     import pygame, sys
     pygame.init()
@@ -269,7 +280,7 @@ def main():
     HEX_SIZE = 120
     HEX_SIZE2 = HEX_SIZE/2.
     HEX_OO = HEX_SIZE2 / (sqrt(3)/2)
-    
+
     pole = Hex(HEX_SIZE, HEX_DIST)
     for i in range(3):
         for j in range(3):
@@ -282,7 +293,7 @@ def main():
 
     screen.blit(screen, (0,0))
     pygame.display.flip()
-    
+
     while 1:
         for i in pygame.event.get(): # Перебор в списке событий
             if i.type == pygame.QUIT: # Обрабатываем событие шечка по крестику закрытия окна
@@ -292,14 +303,14 @@ def main():
                 hex = pole.index(point)
                 if (hex[0] == -1) or (hex[1] == -1): continue
                 poligon = pole.polygon(hex)
-    
+
                 pygame.draw.polygon(screen, (50,250,55), poligon)
 
                 pygame.draw.polygon(screen, (255,15,105), poligon, 2)
                 pygame.draw.line(screen, (255,255,255), point, point, 1)
 
                 pygame.draw.polygon(screen, (50,250,55), poligon,4)
-    
+
                 pygame.display.flip()
 
 
