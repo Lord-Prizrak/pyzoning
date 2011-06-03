@@ -1,6 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
 
-from globals import *
 from resources import *
 import screenhex
 
@@ -47,7 +46,7 @@ class Game:
             #print event
             if (event.type == pygame.QUIT) or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                 self.abort = True
-            elif event.type == pygame.MOUSEBUTTONDOWN:
+            elif event.type == pygame.MOUSEBUTTONUP:
                 self.scr_h.input(event)
             elif event.type == pygame.MOUSEMOTION:
                 self.scr_h.input(event)

@@ -1,12 +1,11 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 
 import os
 import pygame
 import random
-from globals import *
 
+DATA_DIR = "data"
 RES = None
-
 
 def loadres():
     global RES
@@ -61,3 +60,13 @@ class Resources:
 
                 if os.path.isdir(os.path.join(dirname,name)):
                     dirs.append(os.path.join(dirname,name))
+
+
+#def load_image(file):
+    #""" Загрузка изображений. Возвращает surface """
+    #file = os.path.join(DATA_DIR, file)
+    #try:
+        #surface = pygame.image.load(file)
+    #except pygame.error:
+        #raise SystemExit, "Could not load image '%s' %s"%(file, pygame.get_error())
+    #return surface.convert()

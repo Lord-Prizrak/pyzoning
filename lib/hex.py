@@ -250,21 +250,6 @@ class Hex:
 ########## /Ещё не обрабатывал.##########################################
 
 
-def polygon(xy, size):
-    """ Вычисляет координаты вершин гекса."""
-    x, y = xy
-    vo_rad  = size / 2.
-    oo_rad  = vo_rad / ( sqrt(3)/2 )
-    oo_rad2 = oo_rad / 2
-    path  = [[round(x), round(y - oo_rad)]]
-    path += [[round(x + vo_rad), round(y - oo_rad2)]]
-    path += [[round(x + vo_rad), round(y + oo_rad2)]]
-    path += [[round(x), round(y + oo_rad)]]
-    path += [[round(x - vo_rad), round(y + oo_rad2)]]
-    path += [[round(x - vo_rad), round(y - oo_rad2)]]
-    return path
-
-
 def main():
     import pygame, sys
     pygame.init()
