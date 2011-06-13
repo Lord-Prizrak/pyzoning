@@ -48,7 +48,7 @@ class Resources:
 
 
     def scandata(self):
-        """ Сканируем директорию с ресурсами """
+        """ Сканирует директорию с ресурсами """
         dirs = [DATA_DIR]
         for dirname in dirs:
             files = os.listdir(dirname)
