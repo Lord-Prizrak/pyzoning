@@ -168,14 +168,11 @@ class Hex:
 
     def neighbors(self, hex):
         """ Возвращает ближайших соседей гекса hex """
-        #!! Доделать.
         i, j = hex
         if not(j%2):
-            neighbors = [[i-1, j-1], [i-1, j], [i-1, j+1], [i, j-1], [i, j+1], [i+1, j]]
+            return [[i-1, j-1], [i-1, j], [i-1, j+1], [i, j-1], [i, j+1], [i+1, j]]
         else:
-            neighbors = [[i-1, j], [i, j-1],[i, j+1], [i+1, j-1], [i+1, j], [i+1, j+1]]
-
-        return neighbors#.find_all {|hex| hex[0]>=0 and hex[1]>=0}
+            return [[i-1, j], [i, j-1],[i, j+1], [i+1, j-1], [i+1, j], [i+1, j+1]]
 
 
     def distance(self, hex1, hex2):
@@ -186,67 +183,60 @@ class Hex:
         i1, j1 = hex1
         j2, j2 = hex2
 
-        return (j1-j2).abs + (j1 - j2).abs
+        return abs(j1-j2) + abs(j1 - j2)
 
 
-########## Ещё не обрабатывал.##########################################
-    ## def field_size(self, hex_in_row, hex_in_column):
-        ## """ считает размер поля в пикселях. """
-        ## return (self.hex_size*hex_in_row+self.hex_size/2+5, self.str_hgt*hex_in_column+self.oo_rad2+5)
+    def path_no_barriers(self, hex1, hex2):
+        """ Ищет путь. Без учёта препятствий """
+        print "Find start"
+        i1, j1 = hex1
+        i2, j2 = hex2
 
-    ## def path_no_barriers(self, hex1, hex2):
-        ## """ Ищет путь. Без учёта препятствий """
-        ## i1, j1 = *hex1
-        ## i2, j2 = *hex2
+        di = i2 - i1
+        dj = j2 - j1
+        path = []
+        x = 0
+        print "Hex1: ",hex1, " Hex2: ",hex2, " di: ",di, " dj: ",dj
+        while di != 0 or dj != 0:
+            print "     next", x
+            print "             di:", di, "dj:", dj
+            x += 1
+            if dj == 0:
+                if di > 0:
+                    next_i, next_j = i1 + 1, j1
+                else:
+                    next_i, next_j = i1 - 1, j1
 
-        ## di = i2 - i1
-        ## dj = j2 - j1
-        ## path = Array.new
-        ## until di.zero? and dj.zero?
-            ## if dj == 0
-                ## if di > 0
-                    ## next_i, next_j = i1 + 1, j1
-                ## else
-                    ## next_i, next_j = i1 - 1, j1
-                ## end
-            ## else
-                ## if dj > 0
-                    ## if di > 0
-                        ## next_i = i1 + (j1 + 2) % 2
-                        ## next_j = j1 + 1
-                    ## else
-                        ## if di < 0
-                            ## next_i = i1 - (j1 + 3) % 2
-                            ## next_j = j1 + 1
-                        ## else
-                            ## next_i = i1
-                            ## next_j = j1 + 1
-                        ## end
-                    ## end
-                ## else
-                    ## if di > 0
-                        ## next_i = i1 + (j1 + 2) % 2
-                        ## next_j = j1 - 1
-                    ## else
-                        ## if di < 0
-                            ## next_i = i1 - (j1 + 3) % 2
-                            ## next_j = j1 - 1
-                        ## else
-                            ## next_i = i1
-                            ## next_j = j1-1
-                        ## end
-                    ## end
-                ## end
-            ## end
-            ## i1, j1 = next_i, next_j
-            ## path += [[i1, j1]]
-            ## di = i2 - i1
-            ## dj = j2 - j1
-        ## end
-        ## return path
-    ## end
-## end
-########## /Ещё не обрабатывал.##########################################
+            elif dj > 0:
+                if di > 0:
+                    next_i = i1 + (j1 + 2) % 2
+                    next_j = j1 + 1
+                elif di < 0:
+                    next_i = i1 - (j1 + 3) % 2
+                    next_j = j1 + 1
+                else:
+                    next_i = i1
+                    next_j = j1 + 1
+
+            else:
+                if di > 0:
+                    next_i = i1 + (j1 + 2) % 2
+                    next_j = j1 - 1
+                elif di < 0:
+                    next_i = i1 - (j1 + 3) % 2
+                    next_j = j1 - 1
+                else:
+                    next_i = i1
+                    next_j = j1 - 1
+
+            i1, j1 = next_i, next_j
+            path += [[i1, j1]]
+            di = i2 - i1
+            dj = j2 - j1
+
+        print path
+        print "Find end"
+        return path
 
 
 def main():
