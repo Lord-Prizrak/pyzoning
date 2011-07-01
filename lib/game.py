@@ -37,9 +37,21 @@ class Game:
 
         pygame.display.flip()
         
-        planets = []
+        planets = {}
+        hex_col = self.scr_h.hex_col
+        hex_row = self.scr_h.hex_row
+        polygon = self.scr_h.area.polygon
         for x in xrange(10):
-            planets.append(Planet())
+            i = random.randint(0,hex_col-1)
+            j = random.randint(0,hex_row-1)
+            p = random.randint(0,5)
+            xy = polygon( (i,j) )[p]
+            koord = (i,j,p)
+
+            planet = Planet()
+            planet.set_pos( xy )
+            planet.koord = koord
+            planets[koord] = planet
             
         self.scr_h.setplanet(planets)
         self.planets = planets
@@ -75,8 +87,7 @@ class Game:
     def redraw(self):
         """ Перерисовка экрана. """
         self.screen.blit( self.background, (0,0) )
-        srf = self.scr_h.draw()
-        #self.screen.blit( srf, (0, 0) )
+        self.scr_h.draw()
 
         font = pygame.font.Font(None, 20)
         text = font.render( str(self.clock.get_fps())+" "+str(self.clock.get_time()), 1, (250, 250, 250) )
@@ -85,6 +96,9 @@ class Game:
 
 class Planet:
     """ Клас планеты. """
+    
+    select = False
+    
     def __init__(self):
         resc = loadres()
         image = resc.rndImage("planet")
@@ -94,6 +108,15 @@ class Planet:
         
     def set_pos(self, pos):
         self.rect.center = pos
+        
+    def update(self):
+        if self.select:
+            if self.image.get_alpha() is None:
+                self.image.set_alpha(100)
+                self.select = False
+        else:
+            if self.image.get_alpha() is not None:
+                self.image.set_alpha()
 
 
 class Siur:

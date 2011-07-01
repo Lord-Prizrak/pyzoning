@@ -50,7 +50,7 @@ class Hex:
         x = self.vo_rad+ hex[0]*self.hex_size +(self.vo_rad+self.distation/2)*(hex[1]%2) +self.distation*hex[0]
         y = self.oo_rad+ hex[1]*self.str_hgt +self.distation*hex[1]
 
-        return  ( round(x), round(y) )
+        return  ( int(round(x)), int(round(y)) )
 
 
     def polygon(self, hex):
@@ -70,17 +70,23 @@ class Hex:
         """ Вычисляет индекс гекса по координатам точки point.
         !!! Нужно переписать более адекватно !!! """
 
-        j = int( point[1] / (self.str_hgt  + self.distation) )
-        if (j >= 0.) : j = int( j )
-        else: j = -1
-        ##!!! От этих условий надо как-то избавиться. Проблема в том, что если
+        ## bug: !!! От этих условий надо как-то избавиться. Проблема в том, что если
         ##  -1 < i или j < 0, то они становятся 0. Из чего возниакет несколько не очень удобных ситуаций.
         ##  Например когда точка падает рядом с левым нижним углом, обсчёт здесь его берёт как ряд ниже,
         ##  но он сдвинут на пол гекса правее, и номер i становится -0.12, при отбрасывании
         ##  дробной части он становится 0, а не -1
+        ## j = int( point[1] / (self.str_hgt  + self.distation) )
+        ## if (j <= 0.) : j -= 1
+        ## i = int( point[0] / (self.vo_rad*2 + self.distation) -(0.5*(int(j)%2)) )
+        ## if (i <= 0.) : i -= 1
+
+        j = int( point[1] / (self.str_hgt  + self.distation) )
+        if (j >= 0.) : j = int( j )
+        else: j = -1
         i = point[0] / (self.vo_rad*2 + self.distation) -(0.5*(int(j)%2))
         if (i >= 0.) : i = int( i )
         else: i = -1
+
 
         hex = (i, j)
         direct = []
@@ -91,6 +97,48 @@ class Hex:
             if self.inhex(point, hex):
                 return hex
 
+        return (-1, -1)
+
+    def index_circle(self, point, delta = 0):
+        """ Вычисляет индекс гекса по координатам точки point.
+        !!! Нужно переписать более адекватно !!! 
+        Расчёты хромают! Сильно!"""
+        x,y = point
+        
+        j = int( y / (self.str_hgt  + self.distation) )
+        if (j >= 0.) : j = int( j )
+        else: j = -1
+        i = x / (self.vo_rad*2 + self.distation) -(0.5*(int(j)%2))
+        if (i >= 0.) : i = int( i )
+        else: i = -1
+        hex = (i, j)
+
+        if self.inhex_circle(point, hex, delta):
+            print "One", point, hex
+            return hex
+        else:
+            cx,cy = self.center(hex)
+            direct = [0,1]
+            
+            if ( cy-(self.oo_rad/2) <= y <= cy+(self.oo_rad/2) ):
+                direct[1] = CENTER
+            elif y > cy:
+                direct[1] = DOWN
+            else:
+                direct[1] = UP
+    
+            if x > cx:
+                direct[0] = RIGHT
+            else:
+                direct[0] = LEFT
+                
+            hex = self.neighbor(hex, direct)
+            print "DIRECT", hex, direct
+            if self.inhex_circle(point, hex, delta):
+                print "two", point, hex
+                return hex
+
+        print "NOT!"
         return (-1, -1)
 
 
@@ -111,6 +159,9 @@ class Hex:
         #определяем четверть гекса в которою попала точка
         pa = [0,0]
         pb = [0,0]
+
+        if ( y>=cy-(self.oo_rad/2) )and( y<=cy+(self.oo_rad/2) ):
+            direct[1] = CENTER
         if y > cy:
             direct[1] = DOWN
             pa = points[3]
@@ -129,24 +180,56 @@ class Hex:
 
         #определяем попадание в вписанную окружность, дальнейшие проверки не нужны
         if dist <= self.vo_rad:
-            if (y>=points[1][1])and(y<=points[2][1]):
-                direct[1] = CENTER
             return True
 
         #отсекаем лишние точки по краям гекса (справа, слева)
-        if (x <= points[5][0]) or (x >= points[1][0]):
-            if (y>=points[1][1])and(y<=points[2][1]):
-                direct[1] = CENTER
+        if (x < points[5][0]) or (x > points[1][0]):
             return False
 
         #отсекаем лишние точки по Yку с помошью уравнения прямой
         dy = abs( abs(x*(pb[1]-pa[1])-pa[0]*pb[1]+pb[0]*pa[1]) / (pb[0]-pa[0]) )
-        if (direct[1] == UP)and(y>dy):
+        if ( direct[1] == UP ) and ( y>dy ):
             return True
-        if (direct[1] == DOWN)and(y<dy):
+        if ( direct[1] == DOWN ) and ( y<dy ):
             return True
 
         return False
+
+    def inhex_circle(self, point, hex, delta=0):
+        """ Определяет попадает-ли точка point в описанный радиус гекса hex, 
+        используя допуск delta
+        Возвращает либо True, либо False """
+        if delta:
+            delta /= 2
+        x, y = point
+        cx, cy = self.center(hex)
+        dist = sqrt( (cx-x)**2 + (cy-y)**2 )
+        print dist, (cx,cy), hex
+        if dist <= (self.oo_rad + delta):
+            return True
+        return False
+
+
+    def nearestpoint(self, point, hex, center = False):
+        """ Определяет координаты ближайшей вершины гекса hex к координате point.
+        Если center = True то учитывается  и центр гекса """
+        # TODO: Код некрасив, надо поправить
+        pts = self.polygon(hex)
+        
+        if center:
+            cntr = self.center(hex)
+            pts.append( cntr )
+        
+        dstm = 1000
+        pos = None
+
+        for pt in pts:
+            dst = sqrt( (pt[0]-point[0])**2 + (pt[1]-point[1])**2 )
+            if dst < dstm:
+                dstm = dst
+                pos = pt
+
+        return (hex[0], hex[1], pts.index(pos))
 
 
     def neighbor(self, hex, direct):
@@ -188,7 +271,6 @@ class Hex:
 
     def path_no_barriers(self, hex1, hex2):
         """ Ищет путь. Без учёта препятствий """
-        print "Find start"
         i1, j1 = hex1
         i2, j2 = hex2
 
@@ -196,10 +278,8 @@ class Hex:
         dj = j2 - j1
         path = []
         x = 0
-        print "Hex1: ",hex1, " Hex2: ",hex2, " di: ",di, " dj: ",dj
+
         while di != 0 or dj != 0:
-            print "     next", x
-            print "             di:", di, "dj:", dj
             x += 1
             if dj == 0:
                 if di > 0:
@@ -234,8 +314,6 @@ class Hex:
             di = i2 - i1
             dj = j2 - j1
 
-        print path
-        print "Find end"
         return path
 
 

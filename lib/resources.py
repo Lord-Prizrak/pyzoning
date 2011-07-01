@@ -18,6 +18,7 @@ class Resources:
     """ Класс для работы с ресурсами """
 
     resources = {}
+    loaded_im = {}
 
     def __init__(self):
         """ Инициализируем """
@@ -43,9 +44,14 @@ class Resources:
         else:
             restype = os.path.join("data", restype)
 
-        surface = pygame.image.load( os.path.join(restype, name) )
-        return surface.convert()
+        key = (restype, name)
+        try:
+            surface = self.loaded_im[key]
+        except KeyError:
+            surface = pygame.image.load( os.path.join(restype, name) )
+            self.loaded_im[key] = surface
 
+        return surface.convert()
 
     def scandata(self):
         """ Сканирует директорию с ресурсами """

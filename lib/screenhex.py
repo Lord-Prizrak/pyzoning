@@ -12,15 +12,16 @@ C_WHITE = (255,255,255)
 
 class SCRHex:
     """ Класс интерфейса гексагонального поля. """
-    hex_col = 9
-    hex_row = 8
-    hex_size = 60
-    hex_dist = 20
+    hex_col = 6
+    hex_row = 5
+    hex_size = 80
+    hex_dist = 40
     hex_now = (0,0)
     solid = None
     select = None
     hex2 = (0,0)
     selected = []
+    sel_planet = None
     
     h1 = (-1,-1)
 
@@ -60,12 +61,13 @@ class SCRHex:
                 pygame.draw.line(surface, C_WHITE, (x,y), (x,y), 1)#центральная точка
                 text = font.render(str(i)+":"+str(j), 1, C_WHITE)
                 surface.blit(text, (x,y))
+                pygame.draw.circle(surface, C_WHITE, (x,y), int(self.area.oo_rad+15), 1)
 
 
     def draw(self, surf = None):
         """ Отрисовка экрана с гексополем. 
         Может приянть поверхность на которй будет рисовать. 
-        Возвращает или переданную поверхность или None. """
+        Возвращает переданную поверхность или None. """
         if surf == None:
             surf_blit = self.surface.blit
         else:
@@ -81,7 +83,9 @@ class SCRHex:
 
         surf_blit( self.solid, self.solid_rect )
         
-        for planet in self.planets:
+        planets = self.planets.values()
+        for planet in planets:
+            planet.update()
             surf_blit( planet.image, planet.rect )
 
         return surf
@@ -89,14 +93,36 @@ class SCRHex:
 
     def input(self, event):
         """ Обработка событий. """
+        hex, hec_c = 0, 0
         if event.type == pygame.MOUSEMOTION:
             point = event.pos
             hex = self.area.index(point)
+
             if hex == (-1,-1):
                 self.solid_rect.center = (-100,-100)
             else:
                 xy = self.area.center(hex)
                 self.solid_rect.center = xy
+
+            ## TODO: Может этот код всё-же лучше?
+            ## m_rect = pygame.Rect(point, (1,1))
+            ## cr = m_rect.colliderect
+            ## pls = self.planets.values()
+            ## for pl in pls:
+                ## pl.select = False
+                ## if cr(pl.rect):
+                    ## pl.select = True
+
+            hex_c = self.area.index_circle(point, 30)
+            if self.area.inhex_circle(point, hex_c, 30):
+                pos = self.area.nearestpoint(point, hex)
+                if pos in self.planets:
+                    self.planets[pos].select = True
+                    self.sel_planet = self.planets[pos]
+            else:
+                if self.sel_planet is not None:
+                    self.sel_planet.select = False
+
 
         elif event.type == pygame.MOUSEBUTTONUP:
             point = event.pos
@@ -110,20 +136,11 @@ class SCRHex:
 
             if self.h1 == (-1,-1):
                 self.h1 = hex
-                print "one"
             else:
-                print "H1:", self.h1, "H2:", hex
                 path = self.area.path_no_barriers(self.h1,hex)
                 self.h1 = (-1,-1)
                 self.selected = path
-                print "Dist:", self.area.distance(self.h1, hex)
-                print "---------------------------------------------------------"
+
 
     def setplanet(self, planets):
         self.planets = planets
-        for planet in planets:
-            i = random.randint(0,self.hex_col-1)
-            j = random.randint(0,self.hex_row-1)
-            p = random.randint(0,5)
-            xy = self.area.polygon((i,j))[p]
-            planet.set_pos( xy )
