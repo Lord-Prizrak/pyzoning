@@ -5,13 +5,6 @@
 ## Внизу самом код ВРЕМЕННЫЙ чисто только для отладки, потом будет заменён
 ## на что-то более адекватное для демонстрации
 
-#Нужно:
-# 1. Перебрать ф-цию определения гекса по координатам точки
-# 2. Написать ф-ции: поиска соседей, поиска пути (без учёта препятствий и с ним),
-#    определения расстояния, ещё какие понадобятся.
-# 3. Придумать нормальный способ вывода информации для отладки, в консоль,
-#    только по необходимости
-
 from math import cos, pi, sqrt
 
 CENTER  = 1
@@ -49,12 +42,14 @@ class Hex:
         """ Вычисляет координаты центрального пикселя. Принимает индекс гекса hex. """
         x = self.vo_rad+ hex[0]*self.hex_size +(self.vo_rad+self.distation/2)*(hex[1]%2) +self.distation*hex[0]
         y = self.oo_rad+ hex[1]*self.str_hgt +self.distation*hex[1]
-
+        
+        ## FIXME: Некрасивая конструкция в возврате.
         return  ( int(round(x)), int(round(y)) )
 
 
     def polygon(self, hex):
         """ Вычисляет координаты вершин гекса, учитывая размеры. Принимает индекс гекса hex."""
+        ## INFO: Возвращает float числа, что не всегда хорошо.
         x, y = self.center(hex)
         path  = [[round(x), round(y - self.oo_rad)]]
         path += [[round(x + self.vo_rad), round(y - self.oo_rad2)]]
@@ -70,7 +65,7 @@ class Hex:
         """ Вычисляет индекс гекса по координатам точки point.
         !!! Нужно переписать более адекватно !!! """
 
-        ## bug: !!! От этих условий надо как-то избавиться. Проблема в том, что если
+        ## INFO: От этих условий надо как-то избавиться. Проблема в том, что если
         ##  -1 < i или j < 0, то они становятся 0. Из чего возниакет несколько не очень удобных ситуаций.
         ##  Например когда точка падает рядом с левым нижним углом, обсчёт здесь его берёт как ряд ниже,
         ##  но он сдвинут на пол гекса правее, и номер i становится -0.12, при отбрасывании
@@ -103,8 +98,9 @@ class Hex:
         """ Вычисляет индекс гекса по координатам точки point.
         !!! Нужно переписать более адекватно !!! 
         Расчёты хромают! Сильно!"""
-        x,y = point
         
+        ## BUG: РАБОТАЕТ НЕ ПРАВИЛЬНО, ПЕРЕДЛЕАТЬ!
+        x,y = point
         j = int( y / (self.str_hgt  + self.distation) )
         if (j >= 0.) : j = int( j )
         else: j = -1
@@ -114,14 +110,14 @@ class Hex:
         hex = (i, j)
 
         if self.inhex_circle(point, hex, delta):
-            print "One", point, hex
+            print "OK 1"
             return hex
         else:
             cx,cy = self.center(hex)
-            direct = [0,1]
-            
-            if ( cy-(self.oo_rad/2) <= y <= cy+(self.oo_rad/2) ):
+            direct = [0,0]
+            if cy-self.oo_rad2+self.distation/2 <= y <= cy+self.oo_rad2+self.distation/2:
                 direct[1] = CENTER
+                print "CENTER"
             elif y > cy:
                 direct[1] = DOWN
             else:
@@ -131,14 +127,13 @@ class Hex:
                 direct[0] = RIGHT
             else:
                 direct[0] = LEFT
-                
-            hex = self.neighbor(hex, direct)
-            print "DIRECT", hex, direct
-            if self.inhex_circle(point, hex, delta):
-                print "two", point, hex
-                return hex
 
-        print "NOT!"
+            hex1 = self.neighbor(hex, direct)
+            if self.inhex_circle(point, hex1, delta):
+                print "OK 2", hex, hex1
+                return hex1
+            print "not2", hex, direct, hex1, y, cy-self.oo_rad2, cy+self.oo_rad2
+        print "."
         return (-1, -1)
 
 
@@ -160,9 +155,9 @@ class Hex:
         pa = [0,0]
         pb = [0,0]
 
-        if ( y>=cy-(self.oo_rad/2) )and( y<=cy+(self.oo_rad/2) ):
+        if ( y>=cy-self.oo_rad2 )and( y<=cy+self.oo_rad2 ):
             direct[1] = CENTER
-        if y > cy:
+        elif y > cy:
             direct[1] = DOWN
             pa = points[3]
             pb[1] = points[2][1]
@@ -204,7 +199,6 @@ class Hex:
         x, y = point
         cx, cy = self.center(hex)
         dist = sqrt( (cx-x)**2 + (cy-y)**2 )
-        print dist, (cx,cy), hex
         if dist <= (self.oo_rad + delta):
             return True
         return False
@@ -213,7 +207,8 @@ class Hex:
     def nearestpoint(self, point, hex, center = False):
         """ Определяет координаты ближайшей вершины гекса hex к координате point.
         Если center = True то учитывается  и центр гекса """
-        # TODO: Код некрасив, надо поправить
+        ## TODO: Код некрасив, надо поправить
+        ## BUG: Код работает неверно. Переделать.
         pts = self.polygon(hex)
         
         if center:
@@ -251,6 +246,7 @@ class Hex:
 
     def neighbors(self, hex):
         """ Возвращает ближайших соседей гекса hex """
+        ## FIXME: Возвращает всех и даже отрицательных соседей. Наверное не стоит?
         i, j = hex
         if not(j%2):
             return [[i-1, j-1], [i-1, j], [i-1, j+1], [i, j-1], [i, j+1], [i+1, j]]
@@ -262,7 +258,7 @@ class Hex:
         """ принимает два гекса и считает расстояние между ними. В методе
         неверно обсчитывается случай соседства гексов 4,4 и 5,5 к примеру,
         так как считается манхэттенское расстояние """
-        #!! Переделать.
+        ## BUG: Переделать.
         i1, j1 = hex1
         j2, j2 = hex2
 
@@ -271,6 +267,7 @@ class Hex:
 
     def path_no_barriers(self, hex1, hex2):
         """ Ищет путь. Без учёта препятствий """
+        ## INFO: Код чужой непонятный. Разобраццо.
         i1, j1 = hex1
         i2, j2 = hex2
 
@@ -318,29 +315,32 @@ class Hex:
 
 
 def main():
+    """ Здесь будет демонстрационный пример работы с библиотекой. """
+    ## INFO: Здеся далжон быдь нармальный примерчег. Неленизь дапишы.
     import pygame, sys
     pygame.init()
     screen = pygame.display.set_mode((640, 480))
     pygame.display.set_caption('HEX Library example')
     background = pygame.Surface(screen.get_size())
     background = background.convert()
-    background.fill((0, 0, 0))
+    background.fill((255, 255, 255))
     screen.blit(background, (0,0))
     font = pygame.font.Font(None, 20)
 
-    HEX_DIST = 20
-    HEX_SIZE = 120
+    HEX_DIST = 10
+    HEX_SIZE = 50
     HEX_SIZE2 = HEX_SIZE/2.
     HEX_OO = HEX_SIZE2 / (sqrt(3)/2)
 
     pole = Hex(HEX_SIZE, HEX_DIST)
-    for i in range(3):
-        for j in range(3):
+    for i in range(10):
+        for j in range(6):
             hex = pole.center( (i,j) )
             points = pole.polygon( (i,j) )
-            pygame.draw.polygon(screen, (255,255,255), points, 1)
-            pygame.draw.line(screen, (255,255,255), hex, hex, 1)#центральная точка
-            text = font.render(str(i)+":"+str(j), 1, (250, 250, 250))
+            pygame.draw.circle(screen, (0,0,0), hex, int(HEX_SIZE2), 1)
+            #pygame.draw.polygon(screen, (0,0,0), points, 1)
+            pygame.draw.line(screen, (0,0,0), hex, hex, 1)#центральная точка
+            text = font.render(str(i)+":"+str(j), 1, (0, 0, 0))
             screen.blit(text, hex)
 
     screen.blit(screen, (0,0))

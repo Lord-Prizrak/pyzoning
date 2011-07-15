@@ -5,6 +5,8 @@ import pygame
 import pygame.gfxdraw as gfx
 import hex
 
+## FIXME: Внимательно пересмотреть ВСЁ здесь.
+
 C_BLACK = (0,0,0)
 C_FILL = (195,195,195)
 C_SELECT = (165,165,165)
@@ -61,14 +63,14 @@ class SCRHex:
                 pygame.draw.line(surface, C_WHITE, (x,y), (x,y), 1)#центральная точка
                 text = font.render(str(i)+":"+str(j), 1, C_WHITE)
                 surface.blit(text, (x,y))
-                pygame.draw.circle(surface, C_WHITE, (x,y), int(self.area.oo_rad+15), 1)
+                ## pygame.draw.circle(surface, C_WHITE, (x,y), int(self.area.oo_rad+15), 1)
 
 
     def draw(self, surf = None):
         """ Отрисовка экрана с гексополем. 
         Может приянть поверхность на которй будет рисовать. 
         Возвращает переданную поверхность или None. """
-        if surf == None:
+        if surf is None:
             surf_blit = self.surface.blit
         else:
             surf_blit = surf.blit
@@ -104,24 +106,25 @@ class SCRHex:
                 xy = self.area.center(hex)
                 self.solid_rect.center = xy
 
-            ## TODO: Может этот код всё-же лучше?
-            ## m_rect = pygame.Rect(point, (1,1))
-            ## cr = m_rect.colliderect
-            ## pls = self.planets.values()
-            ## for pl in pls:
-                ## pl.select = False
-                ## if cr(pl.rect):
-                    ## pl.select = True
+            ## INFO: Какой код всё-же лучше?
+            m_rect = pygame.Rect(point, (1,1))
+            cr = m_rect.colliderect
+            pls = self.planets.values()
+            for pl in pls:
+                pl.select = False
+                if cr(pl.rect):
+                    pl.select = True
 
-            hex_c = self.area.index_circle(point, 30)
-            if self.area.inhex_circle(point, hex_c, 30):
-                pos = self.area.nearestpoint(point, hex)
-                if pos in self.planets:
-                    self.planets[pos].select = True
-                    self.sel_planet = self.planets[pos]
-            else:
-                if self.sel_planet is not None:
-                    self.sel_planet.select = False
+            ## hex_c = self.area.index_circle(point, 30)
+            ## if hex_c != (-1,-1):
+                ## pos = self.area.nearestpoint(point, hex)
+                ## if pos in self.planets:
+                    ## self.planets[pos].select = True
+                    ## self.sel_planet = self.planets[pos]
+            ## else:
+                ## if self.sel_planet is not None:
+                    ## self.sel_planet.select = False
+                    ## self.sel_planet = None
 
 
         elif event.type == pygame.MOUSEBUTTONUP:

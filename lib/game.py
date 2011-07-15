@@ -3,6 +3,7 @@
 from resources import *
 import screenhex
 
+## FIXME: Проверить ещё разок здесь всё.
 
 class Game:
     """ основной класс игры. """
