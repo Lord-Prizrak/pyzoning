@@ -54,13 +54,14 @@ class SCRHex:
         gfx.aapolygon(self.select, points, C_WHITE)
 
         # отрисовка задника
+        line = pygame.draw.line
         font = pygame.font.Font(None, 20)
         for i in xrange(self.hex_col):
             for j in xrange(self.hex_row):
                 x, y = self.area.center( (i,j) )
                 points = self.area.polygon( (i,j) )
                 gfx.aapolygon(surface, points, C_WHITE)
-                pygame.draw.line(surface, C_WHITE, (x,y), (x,y), 1)#центральная точка
+                line(surface, C_WHITE, (x,y), (x,y), 1)#центральная точка
                 text = font.render(str(i)+":"+str(j), 1, C_WHITE)
                 surface.blit(text, (x,y))
                 ## pygame.draw.circle(surface, C_WHITE, (x,y), int(self.area.oo_rad+15), 1)
@@ -130,19 +131,19 @@ class SCRHex:
         elif event.type == pygame.MOUSEBUTTONUP:
             point = event.pos
             hex = self.area.index(point)
-            ## if hex == (-1,-1):
-                ## return
-            ## if hex in self.selected:
-                ## self.selected.remove(hex)
-            ## else:
-                ## self.selected.append(hex)
-
-            if self.h1 == (-1,-1):
-                self.h1 = hex
+            if hex == (-1,-1):
+                return
+            if hex in self.selected:
+                self.selected.remove(hex)
             else:
-                path = self.area.path_no_barriers(self.h1,hex)
-                self.h1 = (-1,-1)
-                self.selected = path
+                self.selected.append(hex)
+
+            ## if self.h1 == (-1,-1):
+                ## self.h1 = hex
+            ## else:
+                ## path = self.area.path_no_barriers(self.h1,hex)
+                ## self.h1 = (-1,-1)
+                ## self.selected = path
 
 
     def setplanet(self, planets):

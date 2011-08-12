@@ -95,45 +95,8 @@ class Hex:
         return (-1, -1)
 
     def index_circle(self, point, delta = 0):
-        """ Вычисляет индекс гекса по координатам точки point.
-        !!! Нужно переписать более адекватно !!! 
-        Расчёты хромают! Сильно!"""
-        
-        ## BUG: РАБОТАЕТ НЕ ПРАВИЛЬНО, ПЕРЕДЛЕАТЬ!
-        x,y = point
-        j = int( y / (self.str_hgt  + self.distation) )
-        if (j >= 0.) : j = int( j )
-        else: j = -1
-        i = x / (self.vo_rad*2 + self.distation) -(0.5*(int(j)%2))
-        if (i >= 0.) : i = int( i )
-        else: i = -1
-        hex = (i, j)
-
-        if self.inhex_circle(point, hex, delta):
-            print "OK 1"
-            return hex
-        else:
-            cx,cy = self.center(hex)
-            direct = [0,0]
-            if cy-self.oo_rad2+self.distation/2 <= y <= cy+self.oo_rad2+self.distation/2:
-                direct[1] = CENTER
-                print "CENTER"
-            elif y > cy:
-                direct[1] = DOWN
-            else:
-                direct[1] = UP
-    
-            if x > cx:
-                direct[0] = RIGHT
-            else:
-                direct[0] = LEFT
-
-            hex1 = self.neighbor(hex, direct)
-            if self.inhex_circle(point, hex1, delta):
-                print "OK 2", hex, hex1
-                return hex1
-            print "not2", hex, direct, hex1, y, cy-self.oo_rad2, cy+self.oo_rad2
-        print "."
+        """ Вычисляет индекс гекса по координатам точки point."""
+        ## TODO: Написать эту ф-цию. Пока не представляю с какого боку подходить.
         return (-1, -1)
 
 
@@ -207,24 +170,8 @@ class Hex:
     def nearestpoint(self, point, hex, center = False):
         """ Определяет координаты ближайшей вершины гекса hex к координате point.
         Если center = True то учитывается  и центр гекса """
-        ## TODO: Код некрасив, надо поправить
-        ## BUG: Код работает неверно. Переделать.
-        pts = self.polygon(hex)
-        
-        if center:
-            cntr = self.center(hex)
-            pts.append( cntr )
-        
-        dstm = 1000
-        pos = None
-
-        for pt in pts:
-            dst = sqrt( (pt[0]-point[0])**2 + (pt[1]-point[1])**2 )
-            if dst < dstm:
-                dstm = dst
-                pos = pt
-
-        return (hex[0], hex[1], pts.index(pos))
+        ## TODO: Написать эту ф-цию. Пока не представляю с какого боку подходить.
+        return (-1, -1, 0)
 
 
     def neighbor(self, hex, direct):
@@ -317,53 +264,93 @@ class Hex:
 def main():
     """ Здесь будет демонстрационный пример работы с библиотекой. """
     ## INFO: Здеся далжон быдь нармальный примерчег. Неленизь дапишы.
-    import pygame, sys
-    pygame.init()
-    screen = pygame.display.set_mode((640, 480))
-    pygame.display.set_caption('HEX Library example')
-    background = pygame.Surface(screen.get_size())
-    background = background.convert()
-    background.fill((255, 255, 255))
-    screen.blit(background, (0,0))
-    font = pygame.font.Font(None, 20)
-
-    HEX_DIST = 10
-    HEX_SIZE = 50
+    HEX_DIST = 20
+    HEX_SIZE = 70
     HEX_SIZE2 = HEX_SIZE/2.
     HEX_OO = HEX_SIZE2 / (sqrt(3)/2)
-
     pole = Hex(HEX_SIZE, HEX_DIST)
-    for i in range(10):
+
+    import pygame, sys
+    import pygame.gfxdraw as gfx
+
+    pygame.init()
+    screen = pygame.display.set_mode((660, 485))
+    pygame.display.set_caption('HEX Library example')
+    screen.fill((0, 0, 0))
+    font = pygame.font.Font(None, 20)
+    
+    circle = pygame.draw.circle
+    polygon = pygame.draw.polygon
+    line = pygame.draw.line
+
+
+    for i in range(7):
         for j in range(6):
             hex = pole.center( (i,j) )
             points = pole.polygon( (i,j) )
-            pygame.draw.circle(screen, (0,0,0), hex, int(HEX_SIZE2), 1)
-            #pygame.draw.polygon(screen, (0,0,0), points, 1)
-            pygame.draw.line(screen, (0,0,0), hex, hex, 1)#центральная точка
-            text = font.render(str(i)+":"+str(j), 1, (0, 0, 0))
+            #circle(screen, (255,255,255), hex, int(HEX_SIZE2), 1)
+            polygon(screen, (155,155,155), points, 1)
+            line(screen, (255,255,255), hex, hex, 1)#центральная точка
+            text = font.render(str(i)+":"+str(j), 1, (255, 255, 255))
             screen.blit(text, hex)
+
+    # Выбранный гекс.
+    select = pygame.Surface( (pole.hex_size+1, pole.oo_rad*2+1) )
+    select.set_colorkey( (0,0,0), pygame.RLEACCEL )
+    select.set_alpha(150, pygame.RLEACCEL)
+    points = pole.polygon( (0,0) )
+    gfx.filled_polygon(select, points, (165,165,165) )
+    gfx.aapolygon(select, points, (255,255,255))
+    select_rect = select.get_rect()
+
+    # Закрашенный гекс подсветки.
+    solid = pygame.Surface( (pole.hex_size+1, pole.oo_rad*2+1) )
+    solid_rect = solid.get_rect()
+    solid.set_colorkey( (0,0,0), pygame.RLEACCEL )
+    solid.set_alpha(200, pygame.RLEACCEL)
+    points = pole.polygon( (0,0) )
+    gfx.filled_polygon(solid, points, (195,195,195))
+    gfx.aapolygon(solid, points, (255,255,255))
 
     screen.blit(screen, (0,0))
     pygame.display.flip()
+    
+    back = screen.copy()
 
+    selected = []
     while 1:
-        for i in pygame.event.get(): # Перебор в списке событий
-            if i.type == pygame.QUIT: # Обрабатываем событие шечка по крестику закрытия окна
+        for event in pygame.event.get(): # Перебор в списке событий
+            if event.type == pygame.QUIT: # Обрабатываем событие шечка по крестику закрытия окна
                 sys.exit()
-            if i.type == pygame.MOUSEBUTTONDOWN:
-                point = i.pos
+
+            elif event.type == pygame.MOUSEBUTTONUP:
+                point = event.pos
                 hex = pole.index(point)
-                if (hex[0] == -1) or (hex[1] == -1): continue
-                poligon = pole.polygon(hex)
+                if hex == (-1,-1):
+                    continue
+                if hex in selected:
+                    selected.remove(hex)
+                else:
+                    selected.append(hex)
 
-                pygame.draw.polygon(screen, (50,250,55), poligon)
+            elif event.type == pygame.MOUSEMOTION:
+                point = event.pos
+                hex = pole.index(point)
 
-                pygame.draw.polygon(screen, (255,15,105), poligon, 2)
-                pygame.draw.line(screen, (255,255,255), point, point, 1)
+                if hex == (-1,-1):
+                    solid_rect.center = (-100,-100)
+                else:
+                    xy = pole.center(hex)
+                    solid_rect.center = xy
 
-                pygame.draw.polygon(screen, (50,250,55), poligon,4)
+        screen.blit(back, (0,0))
+        for hex in selected:
+            xy = pole.center(hex)
+            select_rect.center = xy
+            screen.blit( select, select_rect )
+        screen.blit( solid, solid_rect )
 
-                pygame.display.flip()
+        pygame.display.flip()
 
 
 if __name__ == '__main__':
