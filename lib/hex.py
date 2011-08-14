@@ -94,8 +94,9 @@ class Hex:
 
         return (-1, -1)
 
+
     def index_circle(self, point, delta = 0):
-        """ Вычисляет индекс гекса по координатам точки point."""
+        """ Вычисляет индекс окружности по координатам точки point."""
         ## TODO: Написать эту ф-цию. Пока не представляю с какого боку подходить.
         return (-1, -1)
 
@@ -153,6 +154,7 @@ class Hex:
 
         return False
 
+
     def inhex_circle(self, point, hex, delta=0):
         """ Определяет попадает-ли точка point в описанный радиус гекса hex, 
         используя допуск delta
@@ -199,6 +201,28 @@ class Hex:
             return [[i-1, j-1], [i-1, j], [i-1, j+1], [i, j-1], [i, j+1], [i+1, j]]
         else:
             return [[i-1, j], [i, j-1],[i, j+1], [i+1, j-1], [i+1, j], [i+1, j+1]]
+
+
+    def direct(self, hex, point)
+        """ Возвращает кортеж с направлением на соседний гекс получив точку и начальный гекс"""
+        direct = []
+        points = self.polygon(hex)
+        cx,cy = self.center(hex)
+        x,y = point
+        
+        if ( y>=cy-self.oo_rad2 )and( y<=cy+self.oo_rad2 ):
+            dy = CENTER
+        elif y > cy:
+            dy = DOWN
+        else:
+            dy = UP
+
+        if x > cx:
+            dx = RIGHT
+        else:
+            dx = LEFT
+
+        return (dx,dy)
 
 
     def distance(self, hex1, hex2):
@@ -274,7 +298,7 @@ def main():
     import pygame.gfxdraw as gfx
 
     pygame.init()
-    screen = pygame.display.set_mode((660, 485))
+    screen = pygame.display.set_mode((640,480))
     pygame.display.set_caption('HEX Library example')
     screen.fill((0, 0, 0))
     font = pygame.font.Font(None, 20)
@@ -319,6 +343,7 @@ def main():
 
     selected = []
     while 1:
+        screen.blit(back, (0,0))
         for event in pygame.event.get(): # Перебор в списке событий
             if event.type == pygame.QUIT: # Обрабатываем событие шечка по крестику закрытия окна
                 sys.exit()
@@ -326,6 +351,7 @@ def main():
             elif event.type == pygame.MOUSEBUTTONUP:
                 point = event.pos
                 hex = pole.index(point)
+                text = font.render(str(point[0])+":"+str(point[1]), 1, (255, 255, 255))
                 if hex == (-1,-1):
                     continue
                 if hex in selected:
@@ -336,20 +362,19 @@ def main():
             elif event.type == pygame.MOUSEMOTION:
                 point = event.pos
                 hex = pole.index(point)
-
                 if hex == (-1,-1):
                     solid_rect.center = (-100,-100)
                 else:
                     xy = pole.center(hex)
                     solid_rect.center = xy
 
-        screen.blit(back, (0,0))
         for hex in selected:
             xy = pole.center(hex)
             select_rect.center = xy
             screen.blit( select, select_rect )
-        screen.blit( solid, solid_rect )
 
+        screen.blit( solid, solid_rect )
+        screen.blit(text, (10,10))
         pygame.display.flip()
 
 
