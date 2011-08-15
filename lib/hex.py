@@ -13,9 +13,8 @@ DOWN    = 3
 LEFT    = 4
 RIGHT   = 5
 
-
 class Hex:
-    """ Класс для обслуживания поля из гексагональных ячеек. Ячейки могут
+    """ Класс для обслуживания поля из правильных гексагональных ячеек. Ячейки могут
     быть не влотную друг к другу.
     i, j - номер гекса. столбец и строка. Гексы строятся со сдвигом строки
     (каждая нечетная строка сдвинута относительно четной на половину ширины)
@@ -25,7 +24,6 @@ class Hex:
     str_hgt - полтора self.oo_rad (высота строки состоящей из гексов).
     oo_rad2 - половина радиуса описанного круга.
     distation - расстояние между гексами по умолчанию = 0 """
-
 
     def __init__(self, size, dist=0):
         """ Инициализация. Принимает размер гекса по ширине size, 
@@ -64,17 +62,11 @@ class Hex:
     def index(self, point):
         """ Вычисляет индекс гекса по координатам точки point.
         !!! Нужно переписать более адекватно !!! """
-
         ## INFO: От этих условий надо как-то избавиться. Проблема в том, что если
         ##  -1 < i или j < 0, то они становятся 0. Из чего возниакет несколько не очень удобных ситуаций.
         ##  Например когда точка падает рядом с левым нижним углом, обсчёт здесь его берёт как ряд ниже,
         ##  но он сдвинут на пол гекса правее, и номер i становится -0.12, при отбрасывании
         ##  дробной части он становится 0, а не -1
-        ## j = int( point[1] / (self.str_hgt  + self.distation) )
-        ## if (j <= 0.) : j -= 1
-        ## i = int( point[0] / (self.vo_rad*2 + self.distation) -(0.5*(int(j)%2)) )
-        ## if (i <= 0.) : i -= 1
-
         j = int( point[1] / (self.str_hgt  + self.distation) )
         if (j >= 0.) : j = int( j )
         else: j = -1
@@ -82,12 +74,11 @@ class Hex:
         if (i >= 0.) : i = int( i )
         else: i = -1
 
-
         hex = (i, j)
-        direct = []
-        if self.inhex(point, hex, direct):
+        if self.inhex(point, hex):
             return hex
         else:
+            direct = self.direct(point, hex)
             hex = self.neighbor(hex, direct)
             if self.inhex(point, hex):
                 return hex
@@ -95,13 +86,7 @@ class Hex:
         return (-1, -1)
 
 
-    def index_circle(self, point, delta = 0):
-        """ Вычисляет индекс окружности по координатам точки point."""
-        ## TODO: Написать эту ф-цию. Пока не представляю с какого боку подходить.
-        return (-1, -1)
-
-
-    def inhex(self, point, hex, direct=[]):
+    def inhex(self, point, hex):
         """ Определяет принадлежит-ли точка point гексу hex
         В direct заносится направление на соседа, ближайшего к точке
         Возвращает либо True, либо False"""
@@ -109,63 +94,42 @@ class Hex:
         i, j = hex
         cx, cy = self.center(hex)
         points = self.polygon(hex)
-        dist = sqrt( (cx-x)**2 + (cy-y)**2 )
-
-        del direct[:]
-        direct.append(0)
-        direct.append(0)
-
-        #определяем четверть гекса в которою попала точка
-        pa = [0,0]
-        pb = [0,0]
-
-        if ( y>=cy-self.oo_rad2 )and( y<=cy+self.oo_rad2 ):
-            direct[1] = CENTER
-        elif y > cy:
-            direct[1] = DOWN
-            pa = points[3]
-            pb[1] = points[2][1]
-        else:
-            direct[1] = UP
-            pa = points[0]
-            pb[1] = points[1][1]
-
-        if x > cx:
-            direct[0] = RIGHT
-            pb[0] = points[2][0]
-        else:
-            direct[0] = LEFT
-            pb[0] = points[4][0]
 
         #определяем попадание в вписанную окружность, дальнейшие проверки не нужны
-        if dist <= self.vo_rad:
+        if sqrt((cx-x)**2 + (cy-y)**2) <= self.vo_rad:
             return True
 
         #отсекаем лишние точки по краям гекса (справа, слева)
-        if (x < points[5][0]) or (x > points[1][0]):
+        if (points[5][0] > x) or (x > points[1][0]):
             return False
 
+        #определяем попадание Yка в центральную область гекса
+        if points[1][1] < y < points[2][1]:
+            return True
+
+        #определяем какие точки брать для уравнения прямой
+        pa = [0,0] # "Центральная" точка: 0 или 3 вершины
+        pb = [0,0] # "Боковая" точка: одна из двух точек справа или слева от центра (всего 4 точки)
+        if y > cy:
+            pa = points[3] # "нижняя" вершина
+            pb[1] = points[2][1] # Y-координа "нижней" точки (2 или 4)
+        else:
+            pa = points[0] # верхняя вершина
+            pb[1] = points[1][1] # Y-координа "верхней" точки (1 или 5)
+
+        if x > cx:
+            pb[0] = points[2][0] # X-координата "правой" точки (1 или 2)
+        else:
+            pb[0] = points[4][0] # X-координата "левой" точки (4 или 5)
+
         #отсекаем лишние точки по Yку с помошью уравнения прямой
-        dy = abs( abs(x*(pb[1]-pa[1])-pa[0]*pb[1]+pb[0]*pa[1]) / (pb[0]-pa[0]) )
-        if ( direct[1] == UP ) and ( y>dy ):
+        dy = abs(abs(x*(pb[1]-pa[1])-pa[0]*pb[1]+pb[0]*pa[1]) / (pb[0]-pa[0]))
+        direct = self.direct(point, hex)
+        if ( direct[1] == UP ) and ( y>dy ): # 
             return True
         if ( direct[1] == DOWN ) and ( y<dy ):
             return True
 
-        return False
-
-
-    def inhex_circle(self, point, hex, delta=0):
-        """ Определяет попадает-ли точка point в описанный радиус гекса hex, 
-        используя допуск delta
-        Возвращает либо True, либо False """
-        if delta:
-            delta /= 2
-        x, y = point
-        cx, cy = self.center(hex)
-        dist = sqrt( (cx-x)**2 + (cy-y)**2 )
-        if dist <= (self.oo_rad + delta):
-            return True
         return False
 
 
@@ -200,17 +164,15 @@ class Hex:
         if not(j%2):
             return [[i-1, j-1], [i-1, j], [i-1, j+1], [i, j-1], [i, j+1], [i+1, j]]
         else:
-            return [[i-1, j], [i, j-1],[i, j+1], [i+1, j-1], [i+1, j], [i+1, j+1]]
+            return [[i-1, j], [i, j-1], [i, j+1], [i+1, j-1], [i+1, j], [i+1, j+1]]
 
 
-    def direct(self, hex, point)
-        """ Возвращает кортеж с направлением на соседний гекс получив точку и начальный гекс"""
-        direct = []
-        points = self.polygon(hex)
+    def direct(self, point, hex):
+        """ Возвращает кортеж с направлением на соседний гекс, получив точку и начальный гекс"""
         cx,cy = self.center(hex)
         x,y = point
         
-        if ( y>=cy-self.oo_rad2 )and( y<=cy+self.oo_rad2 ):
+        if cy-self.oo_rad2 <= y <= cy+self.oo_rad2:
             dy = CENTER
         elif y > cy:
             dy = DOWN
@@ -287,7 +249,6 @@ class Hex:
 
 def main():
     """ Здесь будет демонстрационный пример работы с библиотекой. """
-    ## INFO: Здеся далжон быдь нармальный примерчег. Неленизь дапишы.
     HEX_DIST = 20
     HEX_SIZE = 70
     HEX_SIZE2 = HEX_SIZE/2.
@@ -312,7 +273,6 @@ def main():
         for j in range(6):
             hex = pole.center( (i,j) )
             points = pole.polygon( (i,j) )
-            #circle(screen, (255,255,255), hex, int(HEX_SIZE2), 1)
             polygon(screen, (155,155,155), points, 1)
             line(screen, (255,255,255), hex, hex, 1)#центральная точка
             text = font.render(str(i)+":"+str(j), 1, (255, 255, 255))
@@ -338,10 +298,9 @@ def main():
 
     screen.blit(screen, (0,0))
     pygame.display.flip()
-    
     back = screen.copy()
-
     selected = []
+
     while 1:
         screen.blit(back, (0,0))
         for event in pygame.event.get(): # Перебор в списке событий
