@@ -5,7 +5,14 @@
 ## Внизу самом код ВРЕМЕННЫЙ чисто только для отладки, потом будет заменён
 ## на что-то более адекватное для демонстрации
 
-from math import cos, pi, sqrt
+## self.hex_size= size
+## self.vo_rad  = self.hex_size / 2.
+## self.oo_rad  = self.vo_rad / ( sqrt(3)/2 )
+## self.oo_rad2 = self.oo_rad / 2.
+## self.str_hgt = self.oo_rad + self.oo_rad2
+## self.distation = dist
+
+from math import sqrt
 
 CENTER  = 1
 UP      = 2
@@ -13,65 +20,100 @@ DOWN    = 3
 LEFT    = 4
 RIGHT   = 5
 
+class HexSett:
+    """ Класс для хранения настроек гексов """
+    def __init__(self, hex_size, dist=1):
+        self.vrad  = hex_size / 2.
+        self.orad  = self.vrad / ( sqrt(3)/2 )
+        self.orad2 = self.orad / 2.
+        self.dist  = dist
+        self.dist2 = dist / 2.
+        self.disty = sqrt(self.dist**2 - self.dist2**2)
+        self.str_hgt = self.orad + self.orad2
+        self.size  = hex_size, self.orad*2
+
+
 class Hex:
     """ Класс для обслуживания поля из правильных гексагональных ячеек. Ячейки могут
     быть не влотную друг к другу.
     i, j - номер гекса. столбец и строка. Гексы строятся со сдвигом строки
     (каждая нечетная строка сдвинута относительно четной на половину ширины)
     hex_size - расстояние между центрами противоположных граней - ширина гекса.
-    vo_rad - радиус вписанного круга.
-    oo_rad - радиус описанного круга.
-    str_hgt - полтора self.oo_rad (высота строки состоящей из гексов).
-    oo_rad2 - половина радиуса описанного круга.
-    distation - расстояние между гексами по умолчанию = 0 """
+    vrad - радиус вписанного круга.
+    orad - радиус описанного круга.
+    orad2 - половина радиуса описанного круга.
+    str_hgt - полтора orad (высота строки состоящей из гексов).
+    dist - расстояние между гексами по умолчанию = 0 """
 
     def __init__(self, size, dist=0):
         """ Инициализация. Принимает размер гекса по ширине size, 
         расстояние между гексами dist"""
-        self.hex_size= size
-        self.vo_rad  = self.hex_size / 2.
-        self.oo_rad  = self.vo_rad / ( sqrt(3)/2 )
-        self.oo_rad2 = self.oo_rad / 2.
-        self.str_hgt = self.oo_rad + self.oo_rad2
-        self.distation = dist
+        self.S = HexSett(size, dist)
+        if dist == 0:
+            self.B = self.S
+        else:
+            self.B = HexSett(size+dist)
 
 
-    def center(self, hex):
+    def center(self, hex, Sett=None):
         """ Вычисляет координаты центрального пикселя. Принимает индекс гекса hex. """
-        x = self.vo_rad+ hex[0]*self.hex_size +(self.vo_rad+self.distation/2)*(hex[1]%2) +self.distation*hex[0]
-        y = self.oo_rad+ hex[1]*self.str_hgt +self.distation*hex[1]
-        
-        ## FIXME: Некрасивая конструкция в возврате.
-        return  ( int(round(x)), int(round(y)) )
+        if Sett is None:
+            sett = self.S
+        elif Sett is HexSett:
+            sett = Sett
+        else:
+            sett = self.B
+
+        i,j = hex
+        even = (sett.vrad + sett.dist2) * (j % 2)# смещение для чётных эл-ов
+
+        x = sett.vrad + i*sett.vrad*2  + i*sett.dist + even 
+        y = sett.orad + j*sett.str_hgt + j*sett.disty
+
+        return  x, y
 
 
-    def polygon(self, hex):
+    def polygon(self, hex, Sett=None):
         """ Вычисляет координаты вершин гекса, учитывая размеры. Принимает индекс гекса hex."""
         ## INFO: Возвращает float числа, что не всегда хорошо.
+        if Sett is None:
+            sett = self.S
+        elif Sett is HexSett:
+            sett = Sett
+        else:
+            sett = self.B
+
         x, y = self.center(hex)
-        path  = [[round(x), round(y - self.oo_rad)]]
-        path += [[round(x + self.vo_rad), round(y - self.oo_rad2)]]
-        path += [[round(x + self.vo_rad), round(y + self.oo_rad2)]]
-        path += [[round(x), round(y + self.oo_rad)]]
-        path += [[round(x - self.vo_rad), round(y + self.oo_rad2)]]
-        path += [[round(x - self.vo_rad), round(y - self.oo_rad2)]]
-        
+        path  = [[round(x), round(y - sett.orad)]]
+        path += [[round(x + sett.vrad), round(y - sett.orad2)]]
+        path += [[round(x + sett.vrad), round(y + sett.orad2)]]
+        path += [[round(x), round(y + sett.orad)]]
+        path += [[round(x - sett.vrad), round(y + sett.orad2)]]
+        path += [[round(x - sett.vrad), round(y - sett.orad2)]]
+
         return path
 
 
-    def index(self, point):
+    def index(self, point, Sett=None):
         """ Вычисляет индекс гекса по координатам точки point.
         !!! Нужно переписать более адекватно !!! """
+        if Sett is None:
+            sett = self.S
+        elif Sett is HexSett:
+            sett = Sett
+        else:
+            sett = self.B
+
         ## INFO: От этих условий надо как-то избавиться. Проблема в том, что если
-        ##  -1 < i или j < 0, то они становятся 0. Из чего возниакет несколько не очень удобных ситуаций.
+        ##  -1 < (i или j) < 0, то они становятся 0. Из чего возниакет несколько не очень удобных ситуаций.
         ##  Например когда точка падает рядом с левым нижним углом, обсчёт здесь его берёт как ряд ниже,
         ##  но он сдвинут на пол гекса правее, и номер i становится -0.12, при отбрасывании
         ##  дробной части он становится 0, а не -1
-        j = int( point[1] / (self.str_hgt  + self.distation) )
-        if (j >= 0.) : j = int( j )
+        j = int( point[1] / (sett.str_hgt  + sett.dist) )
+        if j >= 0. : j = int( j )
         else: j = -1
-        i = point[0] / (self.vo_rad*2 + self.distation) -(0.5*(int(j)%2))
-        if (i >= 0.) : i = int( i )
+        i = point[0] / (sett.vrad*2 + sett.dist) -(0.5*(int(j)%2))
+        if i >= 0. : i = int( i )
         else: i = -1
 
         hex = (i, j)
@@ -83,20 +125,26 @@ class Hex:
             if self.inhex(point, hex):
                 return hex
 
-        return (-1, -1)
+        return -1, -1
 
 
-    def inhex(self, point, hex):
+    def inhex(self, point, hex, Sett=None):
         """ Определяет принадлежит-ли точка point гексу hex
         В direct заносится направление на соседа, ближайшего к точке
         Возвращает либо True, либо False"""
+        if Sett is None:
+            sett = self.S
+        elif Sett is HexSett:
+            sett = Sett
+        else:
+            sett = self.B
         x, y = point
-        i, j = hex
+        #i, j = hex
         cx, cy = self.center(hex)
         points = self.polygon(hex)
 
         #определяем попадание в вписанную окружность, дальнейшие проверки не нужны
-        if sqrt((cx-x)**2 + (cy-y)**2) <= self.vo_rad:
+        if sqrt((cx-x)**2 + (cy-y)**2) <= sett.vrad:
             return True
 
         #отсекаем лишние точки по краям гекса (справа, слева)
@@ -133,11 +181,30 @@ class Hex:
         return False
 
 
-    def nearestpoint(self, point, hex, center = False):
-        """ Определяет координаты ближайшей вершины гекса hex к координате point.
-        Если center = True то учитывается  и центр гекса """
+    def nearestpoint(self, point, center=False, Sett=None):
+        """ Определяет координаты ближайшего гекса и его ближайшей вершины к координате point.
+        Если center=True то учитывается  и центр гекса """
         ## TODO: Написать эту ф-цию. Пока не представляю с какого боку подходить.
-        return (-1, -1, 0)
+        if Sett is None:
+            sett = self.B
+        else:
+            sett = Sett
+
+        hex = self.index(point, sett)
+        if hex == (-1,-1):
+            print "Ooooopsss!"
+            return -1, -1, 0
+
+        points = self.polygon(hex)
+        if center:
+            points.append(self.center(hex))
+        dist = []
+        for p in points:
+            dist.append(sqrt((p[0]-point[0])**2 + (p[1]-point[1])**2))
+        mdist = dist.index(min(dist))
+        print dist, mdist
+
+        return hex, mdist
 
 
     def neighbor(self, hex, direct):
@@ -154,7 +221,7 @@ class Hex:
         else:
             i = hex[0]+1*(hex[1]%2)
 
-        return (i,j)
+        return i,j
 
 
     def neighbors(self, hex):
@@ -167,12 +234,19 @@ class Hex:
             return [[i-1, j], [i, j-1], [i, j+1], [i+1, j-1], [i+1, j], [i+1, j+1]]
 
 
-    def direct(self, point, hex):
+    def direct(self, point, hex, Sett=None):
         """ Возвращает кортеж с направлением на соседний гекс, получив точку и начальный гекс"""
+        if Sett is None:
+            sett = self.S
+        elif Sett is HexSett:
+            sett = Sett
+        else:
+            sett = self.B
+
         cx,cy = self.center(hex)
         x,y = point
         
-        if cy-self.oo_rad2 <= y <= cy+self.oo_rad2:
+        if cy-sett.orad2 <= y <= cy+sett.orad2:
             dy = CENTER
         elif y > cy:
             dy = DOWN
@@ -184,7 +258,7 @@ class Hex:
         else:
             dx = LEFT
 
-        return (dx,dy)
+        return dx,dy
 
 
     def distance(self, hex1, hex2):
@@ -249,11 +323,10 @@ class Hex:
 
 def main():
     """ Здесь будет демонстрационный пример работы с библиотекой. """
-    HEX_DIST = 20
+    HEX_DIST = 0
     HEX_SIZE = 70
-    HEX_SIZE2 = HEX_SIZE/2.
-    HEX_OO = HEX_SIZE2 / (sqrt(3)/2)
     pole = Hex(HEX_SIZE, HEX_DIST)
+    sett = pole.S
 
     import pygame, sys
     import pygame.gfxdraw as gfx
@@ -264,7 +337,7 @@ def main():
     screen.fill((0, 0, 0))
     font = pygame.font.Font(None, 20)
     
-    circle = pygame.draw.circle
+    #circle = pygame.draw.circle
     polygon = pygame.draw.polygon
     line = pygame.draw.line
 
@@ -272,14 +345,19 @@ def main():
     for i in range(7):
         for j in range(6):
             hex = pole.center( (i,j) )
+            hex2 = pole.center( (i,j), pole.B )
             points = pole.polygon( (i,j) )
-            polygon(screen, (155,155,155), points, 1)
-            line(screen, (255,255,255), hex, hex, 1)#центральная точка
+            polygon(screen, (255,255,255), points, 1)
+            line(screen, (255,255,0), hex, hex)#центральная точка
             text = font.render(str(i)+":"+str(j), 1, (255, 255, 255))
             screen.blit(text, hex)
 
+            points2 = pole.polygon( (i,j), pole.B)
+            polygon(screen, (155,155,155), points2, 1)
+            line(screen, (255,0,0), hex2, hex2)#центральная точка
+
     # Выбранный гекс.
-    select = pygame.Surface( (pole.hex_size+1, pole.oo_rad*2+1) )
+    select = pygame.Surface( (sett.vrad*2+1, sett.orad*2+1) )
     select.set_colorkey( (0,0,0), pygame.RLEACCEL )
     select.set_alpha(150, pygame.RLEACCEL)
     points = pole.polygon( (0,0) )
@@ -288,7 +366,7 @@ def main():
     select_rect = select.get_rect()
 
     # Закрашенный гекс подсветки.
-    solid = pygame.Surface( (pole.hex_size+1, pole.oo_rad*2+1) )
+    solid = pygame.Surface( (sett.vrad*2+1, sett.orad*2+1) )
     solid_rect = solid.get_rect()
     solid.set_colorkey( (0,0,0), pygame.RLEACCEL )
     solid.set_alpha(200, pygame.RLEACCEL)
@@ -300,7 +378,7 @@ def main():
     pygame.display.flip()
     back = screen.copy()
     selected = []
-
+    text = font.render("0:0", 1, (255, 255, 255))
     while 1:
         screen.blit(back, (0,0))
         for event in pygame.event.get(): # Перебор в списке событий
@@ -310,6 +388,8 @@ def main():
             elif event.type == pygame.MOUSEBUTTONUP:
                 point = event.pos
                 hex = pole.index(point)
+                min = pole.nearestpoint(point,True)
+                print "Min dist", min
                 text = font.render(str(point[0])+":"+str(point[1]), 1, (255, 255, 255))
                 if hex == (-1,-1):
                     continue
