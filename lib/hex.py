@@ -219,28 +219,37 @@ class Hex:
 
     def neighbor(self, hex, direct):
         """ Возвращает индекс ближайшего соседа гекса hex, по направлению direct """
-        ## BUG: Функция работает неправильно!
         print "FROM:",hex, direct
-        if direct[1] == CENTER:
-            j = hex[1]
-            s =  "C"
-        elif direct[1] == UP:
-            j = hex[1]-1
-            s = "U"
-        elif  direct[1] == DOWN:
-            j = hex[1]+1
-            s =  "D"
-        else: j = -1
-
+        s = ""
+        
         if direct[0] == LEFT:
-            i = hex[0]-1*(j%2)
+            i = hex[0]-1*((hex[1]+1)%2)
             s += "L"
         elif direct[0] == RIGHT:
-            i = hex[0]+1*(j%2)
+            i = hex[0]+1*( hex[1] % 2 )
             s += "R"
         else:
             i = -1
             s += "?"
+
+        if direct[1] == CENTER:
+            j = hex[1]
+            
+            if direct[0] == LEFT:
+                i = hex[0]-1
+            elif direct[0] == RIGHT:
+                i = hex[0]+1
+            s +=  "C"
+        elif direct[1] == UP:
+            j = hex[1]-1
+            s += "U"
+        elif  direct[1] == DOWN:
+            j = hex[1]+1
+            s +=  "D"
+        else:
+            s += "%"
+            j = -1
+
 
         print s
         return i,j
@@ -259,6 +268,8 @@ class Hex:
     def direct(self, point, hex, Sett=None):
         """ Возвращает кортеж с направлением на соседний гекс,
         получив точку и начальный гекс"""
+        ## BUG: Функция работает несколько неправильно!
+        ## Неверно определяется направление на центрального соседа.
         if Sett is None:
             sett = self.S
         elif Sett is HexSize:
@@ -266,6 +277,7 @@ class Hex:
 
         cx,cy = self.center(hex)
         x,y = point
+
         if cy-sett.orad2 <= y <= cy+sett.orad2:
             dy = CENTER
         elif y > cy:
@@ -341,7 +353,7 @@ class Hex:
         return path
 
 
-def main():
+def main_tst():
     """ Здесь будет демонстрационный пример работы с библиотекой. """
     HEX_DIST = 30
     HEX_SIZE = 70
@@ -376,7 +388,7 @@ def main():
             polygon(screen, (255,255,255), points2, 1)
 
             r.center = xy
-            rectangle(screen, r, (0,100,0))
+            #rectangle(screen, r, (0,100,0))
 
     # Выбранный гекс.
     sett = pole.B
@@ -439,7 +451,7 @@ def main():
             elif event.type == pygame.MOUSEMOTION:
                 point = event.pos
                 ## hex = pole.index(point)
-                ## hex2 = pole.index(point, True)
+                hex2 = pole.index(point, True)
                 ## if hex == (-1,-1):
                     ## solid_rect.center = (-100,-100)
                 ## else:
@@ -452,11 +464,11 @@ def main():
                     print "TO:", s
 
 
-                ## if hex2 == (-1,-1):
-                    ## solid_rect2.center = (-100,-100)
-                ## else:
-                    ## xy = pole.center(hex2)
-                    ## solid_rect2.center = xy
+                if hex2 == (-1,-1):
+                    solid_rect2.center = (-100,-100)
+                else:
+                    xy = pole.center(hex2)
+                    solid_rect2.center = xy
 
         for hex in selected:
             xy = pole.center(hex)
@@ -470,4 +482,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main_tst()
