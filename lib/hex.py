@@ -268,8 +268,8 @@ class Hex:
     def direct(self, point, hex, Sett=None):
         """ Возвращает кортеж с направлением на соседний гекс,
         получив точку и начальный гекс"""
-        ## BUG: Функция работает несколько неправильно!
-        ## Неверно определяется направление на центрального соседа.
+        ## BUG: Небольшая погрешность вычислений. Откуда непонятно.
+        ## Особенно заметно на больших расстояниях.
         if Sett is None:
             sett = self.S
         elif Sett is HexSize:
@@ -278,17 +278,23 @@ class Hex:
         cx,cy = self.center(hex)
         x,y = point
 
-        if cy-sett.orad2 <= y <= cy+sett.orad2:
-            dy = CENTER
-        elif y > cy:
-            dy = DOWN
-        else:
-            dy = UP
-
         if x > cx:
             dx = RIGHT
         else:
             dx = LEFT
+
+        ## INFO: Через равносторонние треугольники
+        deltax = abs( (cx-x)/2. )
+        deltay = abs( cy - y )
+        if deltay < deltax:
+            dy = CENTER
+        elif y < cy:
+            dy = UP
+        elif y > cy:
+            dy = DOWN
+        else:
+            print u"Ошибка в функции direct!!!"
+            dy = 0
 
         return dx,dy
 
