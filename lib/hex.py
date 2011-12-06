@@ -284,7 +284,7 @@ class Hex:
             dx = LEFT
 
         ## INFO: Через равносторонние треугольники
-        deltax = (abs(cx-x)/sqrt(3.))*2
+        deltax = (abs(cx-x)/sqrt(3.))
         deltay = abs(cy-y)
         if deltay < deltax:
             dy = CENTER
