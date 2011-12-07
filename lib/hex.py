@@ -88,7 +88,7 @@ class Hex:
         ## path += [[round(x), round(y + sett.orad)]]
         ## path += [[round(x - sett.vrad), round(y + sett.orad2)]]
         ## path += [[round(x - sett.vrad), round(y - sett.orad2)]]
-        
+
         path  = [[x, y - sett.orad]]
         path += [[x + sett.vrad, y - sett.orad2]]
         path += [[x + sett.vrad, y + sett.orad2]]
@@ -110,9 +110,7 @@ class Hex:
             sett = self.S
 
         x,y = point
-        
         y -= sett.disty #смещение, что-бы центр гекса совпадал с центром кваратной ячейки
-        
         j = int( y/(sett.str_hgt+sett.disty) )
         i = int( x/(sett.size[0]+sett.distx) -(0.5*(j%2)) )
 
@@ -138,6 +136,7 @@ class Hex:
         """ Определяет принадлежит-ли точка point гексу hex
         В direct заносится направление на соседа, ближайшего к точке
         Возвращает либо True, либо False """
+        ## INFO: Код не очень понятен. Стоило-бы упростить...
         if Sett:
             sett = Sett
         elif bighex:
@@ -178,104 +177,24 @@ class Hex:
 
         #отсекаем лишние точки по Yку с помошью уравнения прямой
         dy = abs(abs(x*(pb[1]-pa[1])-pa[0]*pb[1]+pb[0]*pa[1]) / (pb[0]-pa[0]))
-        ## direct = self.direct(point, hex)
-        ## if ( direct[1] == UP ) and ( y>dy ):
-            ## return True
-        ## if ( direct[1] == DOWN ) and ( y<dy ):
-            ## return True
-        if ( cy>y ) and ( y>dy ):
+
+        if cy>y>dy :
             return True
-        if ( cy<y ) and ( y<dy ):
+        if cy<y<dy:
             return True
 
         return False
 
 
-    def nearestpoint(self, point, center=False, Sett=None):
-        """ Определяет координаты ближайшего гекса и его ближайшей вершины 
-        к координате point. Если center=True то учитывается  и центр гекса """
-        ## TODO: Написать эту ф-цию. Пока не представляю с какого боку подходить.
-        if Sett is None:
-            sett = self.B
-        else:
-            sett = Sett
-
-        hex = self.index(point, sett)
-        if hex == (-1,-1):
-            print "Ooooopsss!"
-            return -1, -1, 0
-
-        points = self.polygon(hex)
-        if center:
-            points.append(self.center(hex))
-        dist = []
-        for p in points:
-            dist.append(sqrt((p[0]-point[0])**2 + (p[1]-point[1])**2))
-        mdist = dist.index(min(dist))
-        print dist, mdist
-
-        return hex, mdist
-
-
-    def neighbor(self, hex, direct):
-        """ Возвращает индекс ближайшего соседа гекса hex, по направлению direct """
-        print "FROM:",hex, direct
-        s = ""
-        
-        if direct[0] == LEFT:
-            i = hex[0]-1*((hex[1]+1)%2)
-            s += "L"
-        elif direct[0] == RIGHT:
-            i = hex[0]+1*( hex[1] % 2 )
-            s += "R"
-        else:
-            i = -1
-            s += "?"
-
-        if direct[1] == CENTER:
-            j = hex[1]
-            
-            if direct[0] == LEFT:
-                i = hex[0]-1
-            elif direct[0] == RIGHT:
-                i = hex[0]+1
-            s +=  "C"
-        elif direct[1] == UP:
-            j = hex[1]-1
-            s += "U"
-        elif  direct[1] == DOWN:
-            j = hex[1]+1
-            s +=  "D"
-        else:
-            s += "%"
-            j = -1
-
-
-        print s
-        return i,j
-
-
-    def neighbors(self, hex):
-        """ Возвращает ближайших соседей гекса hex """
-        ## FIXME: Возвращает всех и даже отрицательных соседей. Наверное не стоит?
-        i, j = hex
-        if not(j%2):
-            return [[i-1, j-1], [i-1, j], [i-1, j+1], [i, j-1], [i, j+1], [i+1, j]]
-        else:
-            return [[i-1, j], [i, j-1], [i, j+1], [i+1, j-1], [i+1, j], [i+1, j+1]]
-
-
     def direct(self, point, hex, Sett=None):
         """ Возвращает кортеж с направлением на соседний гекс,
         получив точку и начальный гекс"""
-        ## BUG: Небольшая погрешность вычислений. Откуда непонятно.
-        ## Особенно заметно на больших расстояниях.
         if Sett is None:
             sett = self.S
         elif Sett is HexSize:
             sett = Sett
 
-        cx,cy = self.center(hex)
+        cx,cy = self.center(hex, Sett)
         x,y = point
 
         if x > cx:
@@ -283,7 +202,7 @@ class Hex:
         else:
             dx = LEFT
 
-        ## INFO: Через равносторонние треугольники
+        ## Через равносторонние треугольники
         deltax = (abs(cx-x)/sqrt(3.))
         deltay = abs(cy-y)
         if deltay < deltax:
@@ -293,17 +212,80 @@ class Hex:
         elif y > cy:
             dy = DOWN
         else:
-            print u"Ошибка в функции direct!!!"
             dy = 0
 
         return dx,dy
 
 
+    def neighbor(self, hex, direct):
+        """ Возвращает индекс ближайшего соседа гекса hex, по направлению direct """
+        ## INFO: Код не очень....
+        if direct[0] == LEFT:
+            i = hex[0]-1*((hex[1]+1)%2)
+        elif direct[0] == RIGHT:
+            i = hex[0]+1*( hex[1] % 2 )
+        else:
+            i = -1
+
+        if direct[1] == CENTER:
+            j = hex[1]
+            if direct[0] == LEFT:
+                i = hex[0]-1
+            elif direct[0] == RIGHT:
+                i = hex[0]+1
+
+        elif direct[1] == UP:
+            j = hex[1]-1
+        elif  direct[1] == DOWN:
+            j = hex[1]+1
+        else:
+            j = -1
+
+        return i,j
+
+
+    def neighbors(self, hex):
+        """ Возвращает ВСЕХ ближайших соседей гекса hex """
+        i, j = hex
+        if j%2:
+            return ((i+1, j-1), (i+1, j), (i+1, j+1), (i, j+1), (i-1, j), (i, j-1))
+        else:
+            return ((i, j-1), (i+1, j), (i, j+1), (i-1, j+1), (i-1, j), (i-1, j-1))
+
+    def nearestpoint(self, point, center=False, Sett=None):
+        """ Возвращает координаты ближайшего гекса, его ближайшей вершины 
+        к точке point и расстояние до неё. Если center=True то учитывается  и центр гекса """
+        ## TODO: Написать эту ф-цию. Пока не представляю с какого боку подходить.
+        if Sett is None:
+            sett = self.B
+        else:
+            sett = Sett
+
+        hex = self.index(point, True, Sett)
+        if hex == (-1,-1):
+            ## прикинемся ветошью
+            return (-1,-1), 0, 0
+
+        points = self.polygon(hex)
+        if center:
+            points.append(self.center(hex))
+
+        dist = []
+        for p in points:
+            dist.append(sqrt((p[0]-point[0])**2+(p[1]-point[1])**2))
+
+        mindist = min(dist)
+        minpoint = dist.index(mindist)
+
+        return hex, minpoint, mindist
+
+
     def distance(self, hex1, hex2):
-        """ принимает два гекса и считает расстояние между ними. В методе
-        неверно обсчитывается случай соседства гексов 4,4 и 5,5 к примеру,
-        так как считается манхэттенское расстояние """
+        """ Считает расстояние между двумя гексами. """
+        ## INFO: Вообще нужно? Пока не где не используется
         ## BUG: Переделать.
+        ## Неверно обсчитывается случай соседства гексов 4,4 и 5,5 к примеру,
+        ## так как считается манхэттенское расстояние.
         i1, j1 = hex1
         j2, j2 = hex2
 
@@ -312,6 +294,7 @@ class Hex:
 
     def path_no_barriers(self, hex1, hex2):
         """ Ищет путь. Без учёта препятствий """
+        ## INFO: Вообще нужно? Пока не где не используется
         ## INFO: Код чужой непонятный. Разобраццо.
         i1, j1 = hex1
         i2, j2 = hex2
@@ -359,7 +342,7 @@ class Hex:
         return path
 
 
-def main_tst():
+def example_main():
     """ Здесь будет демонстрационный пример работы с библиотекой. """
     HEX_DIST = 30
     HEX_SIZE = 70
@@ -375,11 +358,6 @@ def main_tst():
     pygame.display.set_caption('HEX Library example')
     screen.fill((0, 0, 0))
     font = pygame.font.Font(None, 20)
-    
-    sett = pole.B
-    r = pygame.Rect( (0,0), (sett.size[0]+sett.distx,sett.str_hgt+sett.disty+1) )
-    sett = pole.S
-    r2 = pygame.Rect( (0,0), (sett.size[0]+sett.distx,sett.str_hgt+sett.disty+1) )
 
     for i in range(7):
         for j in range(6):
@@ -390,40 +368,22 @@ def main_tst():
             text = font.render(str(i)+":"+str(j), 1, (255, 255, 255))
             screen.blit(text, xy)
 
-            points2 = pole.polygon( (i,j), True)
-            polygon(screen, (255,255,255), points2, 1)
-
-            r.center = xy
-            #rectangle(screen, r, (0,100,0))
-
-    # Выбранный гекс.
     sett = pole.B
+    points = pole.polygon( (0,0) )
+    # Выбранный гекс.
     select = pygame.Surface( (sett.size[0]+1, sett.size[1]+1) )
     select.set_colorkey( (0,0,0), pygame.RLEACCEL )
     select.set_alpha(150, pygame.RLEACCEL)
-    points = pole.polygon( (0,0) )
-    polygon(select, (165,165,165), points )
+    polygon(select, (105,105,105), points )
     polygon(select, (255,255,255), points, 1)
     select_rect = select.get_rect()
-
     # Закрашенный гекс подсветки.
     solid = pygame.Surface( (sett.size[0]+1, sett.size[1]+1) )
     solid.set_colorkey( (0,0,0), pygame.RLEACCEL )
     solid.set_alpha(200, pygame.RLEACCEL)
-    points = pole.polygon( (0,0) )
-    polygon(solid, (195,195,195), points)
+    polygon(solid, (145,145,145), points)
     polygon(solid, (255,255,255), points, 1)
     solid_rect = solid.get_rect()
-    
-    sett = pole.B
-    # Закрашенный большой гекс подсветки.
-    solid2 = pygame.Surface( (sett.size[0]+1, sett.size[1]+1) )
-    solid2.set_colorkey( (0,0,0), pygame.RLEACCEL )
-    solid2.set_alpha(200, pygame.RLEACCEL)
-    points2 = pole.polygon( (0,0), True )
-    polygon(solid2, (195,95,195), points2)
-    polygon(solid2, (255,55,255), points2, 1)
-    solid_rect2 = solid2.get_rect()
 
     screen.blit(screen, (0,0))
     pygame.display.flip()
@@ -432,60 +392,47 @@ def main_tst():
     text = font.render("0:0", 1, (255, 255, 255))
     while 1:
         screen.blit(back, (0,0))
-        for event in pygame.event.get(): # Перебор в списке событий
-            if event.type == pygame.QUIT: # Обрабатываем событие шечка по крестику закрытия окна
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
                 sys.exit()
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 point = event.pos
                 hex = pole.index(point)
-                
+
                 if hex in selected:
                     selected.remove(hex)
                 else:
                     selected.append(hex)
 
-                ## min = pole.nearestpoint(point,True)
-                ## text = font.render(str(point[0])+":"+str(point[1]), 1, (255, 255, 255))
-                ## if hex == (-1,-1):
-                    ## continue
-                ## if hex in selected:
-                    ## selected.remove(hex)
-                ## else:
-                    ## selected.append(hex)
-
             elif event.type == pygame.MOUSEMOTION:
                 point = event.pos
-                ## hex = pole.index(point)
-                hex2 = pole.index(point, True)
-                ## if hex == (-1,-1):
-                    ## solid_rect.center = (-100,-100)
-                ## else:
-                    ## xy = pole.center(hex)
-                    ## solid_rect.center = xy
-                    
-                if selected:
-                    f = selected[0]
-                    s = pole.neighbor(f,pole.direct(point,f))
-                    print "TO:", s
+                hex = pole.index(point)
 
-
-                if hex2 == (-1,-1):
-                    solid_rect2.center = (-100,-100)
+                if hex == (-1,-1):
+                    solid_rect.center = (-100,-100)
                 else:
-                    xy = pole.center(hex2)
-                    solid_rect2.center = xy
+                    xy = pole.center(hex)
+                    solid_rect.center = xy
+
+                p = pole.nearestpoint(point, True)
+                if p[1] == 6:
+                    px,py = pole.center(p[0])
+                else:
+                    px,py = pole.polygon(p[0])[p[1]]
+
 
         for hex in selected:
             xy = pole.center(hex)
             select_rect.center = xy
-            screen.blit( select, select_rect )
+            screen.blit(select, select_rect)
 
-        screen.blit( solid, solid_rect )
-        screen.blit( solid2, solid_rect2 )
+        circle(screen, (50,50,255), (int(px),int(py)), 10, 1)
+
+        screen.blit(solid, solid_rect)
         screen.blit(text, (10,10))
         pygame.display.flip()
 
 
 if __name__ == '__main__':
-    main_tst()
+    example_main()
