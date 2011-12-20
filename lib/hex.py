@@ -114,8 +114,8 @@ class Hex:
         j = int( y/(sett.str_hgt+sett.disty) )
         i = int( x/(sett.size[0]+sett.distx) -(0.5*(j%2)) )
 
-        if j < 0 or i < 0:
-            return -1, -1
+        ## if j < 0 or i < 0:
+            ## return ()
 
         hex = (i, j)
         
@@ -124,12 +124,12 @@ class Hex:
         else:
             direct = self.direct(point, hex)
             hex = self.neighbor(hex, direct)
-            if (hex[0]<0)or(hex[1]<0):
-                return -1,-1
+            ## if (hex[0]<0)or(hex[1]<0):
+                ## return -1,-1
             if self.inhex(point, hex, bighex, Sett):
                 return hex
 
-        return -1, -1
+        return ()
 
 
     def inhex(self, point, hex, bighex=False, Sett=None):
@@ -255,15 +255,13 @@ class Hex:
     def nearestpoint(self, point, center=False, Sett=None):
         """ Возвращает координаты ближайшего гекса, его ближайшей вершины 
         к точке point и расстояние до неё. Если center=True то учитывается  и центр гекса """
-        ## TODO: Написать эту ф-цию. Пока не представляю с какого боку подходить.
         if Sett is None:
             sett = self.B
         else:
             sett = Sett
 
         hex = self.index(point, True, Sett)
-        if hex == (-1,-1):
-            ## прикинемся ветошью
+        if not hex:
             return (-1,-1), 0, 0
 
         points = self.polygon(hex)
@@ -344,94 +342,101 @@ class Hex:
 
 def example_main():
     """ Здесь будет демонстрационный пример работы с библиотекой. """
+    import pygame, sys
+    from pygame.draw import polygon, line, circle
+    from pygame.gfxdraw import rectangle
+
     HEX_DIST = 30
     HEX_SIZE = 70
     pole = Hex(HEX_SIZE, HEX_DIST)
 
-    import pygame, sys
-    from pygame.draw import polygon, line, circle
-    from pygame.gfxdraw import rectangle
-    import pygame.gfxdraw as gfx
-
+    ## инициализация
     pygame.init()
     screen = pygame.display.set_mode((640,480))
     pygame.display.set_caption('HEX Library example')
     screen.fill((0, 0, 0))
     font = pygame.font.Font(None, 20)
 
-    for i in range(7):
-        for j in range(6):
-            xy = pole.center( (i,j) )
-            points = pole.polygon( (i,j) )
-            polygon(screen, (255,255,255), points, 1)
-            line(screen, (255,255,0), xy, xy)#центральная точка
-            text = font.render(str(i)+":"+str(j), 1, (255, 255, 255))
-            screen.blit(text, xy)
-
     sett = pole.B
     points = pole.polygon( (0,0) )
-    # Выбранный гекс.
+    ## Выбранный гекс (их накликали)
     select = pygame.Surface( (sett.size[0]+1, sett.size[1]+1) )
     select.set_colorkey( (0,0,0), pygame.RLEACCEL )
     select.set_alpha(150, pygame.RLEACCEL)
     polygon(select, (105,105,105), points )
     polygon(select, (255,255,255), points, 1)
     select_rect = select.get_rect()
-    # Закрашенный гекс подсветки.
-    solid = pygame.Surface( (sett.size[0]+1, sett.size[1]+1) )
-    solid.set_colorkey( (0,0,0), pygame.RLEACCEL )
-    solid.set_alpha(200, pygame.RLEACCEL)
+    ## Выделенный гекс подсветки (мышка над ним)
+    solid = select.copy()
     polygon(solid, (145,145,145), points)
     polygon(solid, (255,255,255), points, 1)
     solid_rect = solid.get_rect()
 
-    screen.blit(screen, (0,0))
+    ## Отрисовка "задника"
+    for i in range(7):
+        for j in range(6):
+            xy = pole.center( (i,j) )
+            points = pole.polygon( (i,j) )
+            polygon(screen, (255,255,255), points, 1)
+            line(screen, (255,255,0), xy, xy)## центральная точка
+            text = font.render(str(i)+":"+str(j), 1, (255, 255, 255))
+            screen.blit(text, xy)
+
     pygame.display.flip()
     back = screen.copy()
     selected = []
     text = font.render("0:0", 1, (255, 255, 255))
-    while 1:
-        screen.blit(back, (0,0))
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                sys.exit()
 
+    ## Основной цикл
+    while 1:
+        screen.blit(back, (0,0)) ## "очистка" экрана
+        ## Обработка событий
+        for event in pygame.event.get():
+            ## Движение мышки
+            if event.type == pygame.MOUSEMOTION:
+                point = event.pos
+                hex = pole.index(point)
+                
+                ## Выделенный гекс
+                if hex:
+                    xy = pole.center(hex)
+                    solid_rect.center = xy
+                else:
+                    solid_rect.center = (-100,-100)
+
+                ## Ближайшая точка
+                p = pole.nearestpoint(point, True)
+                if p[0]:
+                    if p[1] == 6:
+                        px,py = pole.center(p[0])
+                    else:
+                        px,py = pole.polygon(p[0])[p[1]]
+
+            ## Отпустили кнопку мышки
             elif event.type == pygame.MOUSEBUTTONUP:
                 point = event.pos
                 hex = pole.index(point)
 
+                ## Выделили гекс (может быть много)
                 if hex in selected:
                     selected.remove(hex)
                 else:
                     selected.append(hex)
 
-            elif event.type == pygame.MOUSEMOTION:
-                point = event.pos
-                hex = pole.index(point)
+            ## Выход.
+            elif (event.type == pygame.QUIT) or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+                sys.exit()
 
-                if hex == (-1,-1):
-                    solid_rect.center = (-100,-100)
-                else:
-                    xy = pole.center(hex)
-                    solid_rect.center = xy
-
-                p = pole.nearestpoint(point, True)
-                if p[1] == 6:
-                    px,py = pole.center(p[0])
-                else:
-                    px,py = pole.polygon(p[0])[p[1]]
-
-
+        ## Отрисовка выбранных гексов
         for hex in selected:
             xy = pole.center(hex)
             select_rect.center = xy
             screen.blit(select, select_rect)
 
-        circle(screen, (50,50,255), (int(px),int(py)), 10, 1)
-
-        screen.blit(solid, solid_rect)
-        screen.blit(text, (10,10))
-        pygame.display.flip()
+        
+        circle(screen, (50,50,255), (int(px),int(py)), 10, 1) ## Кружочек ближайшей точки
+        screen.blit(solid, solid_rect) ## Выделенный гекс
+        pygame.display.flip() ## Обновили экран
 
 
 if __name__ == '__main__':

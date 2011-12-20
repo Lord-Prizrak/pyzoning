@@ -18,26 +18,25 @@ class Game:
         поверхность копирутеся в background - "эталонную" поверхность, которой 
         будет затираться основная при каждом кадре. """
 
-        # Получаем экземпляр загрузчика ресурсов
+        ## Загрузчик ресурсов
         resc = loadres()
 
+        ## Готовим окошко
         pygame.init()
         screen = pygame.display.set_mode(self.SCREEN_SIZE)
         pygame.display.set_caption("Зонирование: Начало.")
-        pygame.display.set_icon( resc.Image('icon.png') )
+        ##pygame.display.set_icon( resc.Image('icon.png') )
         self.bgimage = resc.Image("background.png")
         screen.blit( pygame.transform.scale(self.bgimage, self.SCREEN_SIZE), (0,0) )
-        
         surf = screen.subsurface( screen.get_rect() )
         self.scr_h = screenhex.SCRHex( surf )
-
-        self.clock = pygame.time.Clock()
-        
         self.background = screen.copy()
+        pygame.display.flip()
         self.screen = screen
 
-        pygame.display.flip()
-        
+        self.clock = pygame.time.Clock()
+
+        ## Создаём планеты
         planets = {}
         hex_col = self.scr_h.hex_col
         hex_row = self.scr_h.hex_row
@@ -47,13 +46,23 @@ class Game:
             j = random.randint(0,hex_row-1)
             p = random.randint(0,5)
             xy = polygon( (i,j) )[p]
-            koord = (i,j,p)
+            koord = (i,j),p
 
             planet = Planet()
             planet.set_pos( xy )
             planet.koord = koord
             planets[koord] = planet
-            
+        
+        ## for i in xrange(hex_col):
+            ## for j in xrange(hex_row):
+                ## xys = polygon( (i,j) )
+                ## for p, xy in enumerate(xys):
+                    ## koord = (i,j),p
+                    ## planet = Planet()
+                    ## planet.set_pos( xy )
+                    ## planet.koord = koord
+                    ## planets[koord] = planet
+
         self.scr_h.setplanet(planets)
         self.planets = planets
 
@@ -90,6 +99,7 @@ class Game:
         self.screen.blit( self.background, (0,0) )
         self.scr_h.draw()
 
+        ## FPS
         font = pygame.font.Font(None, 20)
         text = font.render( str(self.clock.get_fps())+" "+str(self.clock.get_time()), 1, (250, 250, 250) )
         self.screen.blit(text, (10,self.SCREEN_SIZE[1]-20))
@@ -101,6 +111,7 @@ class Planet:
     select = False
     
     def __init__(self):
+        """ Инициализируемся. """
         resc = loadres()
         image = resc.rndImage("planet")
         self.image = pygame.transform.scale(image, (30,30) )
@@ -108,13 +119,14 @@ class Planet:
         self.rect = self.image.get_rect()
         
     def set_pos(self, pos):
+        """ Устанавливаем позицию. В координатах основной поверхности! """
         self.rect.center = pos
         
     def update(self):
+        """ Обновляем объект. """
         if self.select:
             if self.image.get_alpha() is None:
                 self.image.set_alpha(100)
-                self.select = False
         else:
             if self.image.get_alpha() is not None:
                 self.image.set_alpha()

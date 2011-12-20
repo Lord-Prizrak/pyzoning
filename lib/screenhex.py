@@ -16,8 +16,8 @@ class SCRHex:
     """ Класс интерфейса гексагонального поля. """
     hex_col = 6
     hex_row = 5
-    hex_size = 80
-    hex_dist = 40
+    hex_size = 70
+    hex_dist = 50
     hex_now = (0,0)
     solid = None
     select = None
@@ -28,7 +28,8 @@ class SCRHex:
     h1 = (-1,-1)
 
     def __init__(self, surface):
-        """ Инициализация. """
+        """ Инициализация. 
+        surface - поверхность на которой будем рисовать """
         self.surface = surface
         self.surface.set_colorkey( C_BLACK, pygame.RLEACCEL )
         self.rect = self.surface.get_rect()
@@ -36,19 +37,17 @@ class SCRHex:
         self.area = hex.Hex(self.hex_size, self.hex_dist)        
 
         # Закрашенный гекс подсветки.
-        self.solid = pygame.Surface( (self.area.hex_size+1, self.area.oo_rad*2+1) )
-        self.solid_rect = self.solid.get_rect()
+        self.solid = pygame.Surface( (self.area.S.size[0]+1, self.area.S.size[1]+1) )
         self.solid.set_colorkey( C_BLACK, pygame.RLEACCEL )
         self.solid.set_alpha(200, pygame.RLEACCEL)
+        self.solid_rect = self.solid.get_rect()
+        self.solid_rect.center = (-100,-100)
         points = self.area.polygon( (0,0) )
         gfx.filled_polygon(self.solid, points, C_FILL)
         gfx.aapolygon(self.solid, points, C_WHITE)
-
         # Выбранный гекс.
-        self.select = pygame.Surface( (self.area.hex_size+1, self.area.oo_rad*2+1) )
+        self.select = self.solid.copy()
         self.select_rect = self.select.get_rect()
-        self.select.set_colorkey( C_BLACK, pygame.RLEACCEL )
-        self.select.set_alpha(150, pygame.RLEACCEL)
         points = self.area.polygon( (0,0) )
         gfx.filled_polygon(self.select, points, C_SELECT)
         gfx.aapolygon(self.select, points, C_WHITE)
@@ -64,28 +63,29 @@ class SCRHex:
                 line(surface, C_WHITE, (x,y), (x,y), 1)#центральная точка
                 text = font.render(str(i)+":"+str(j), 1, C_WHITE)
                 surface.blit(text, (x,y))
-                ## pygame.draw.circle(surface, C_WHITE, (x,y), int(self.area.oo_rad+15), 1)
 
 
     def draw(self, surf = None):
-        """ Отрисовка экрана с гексополем. 
-        Может приянть поверхность на которй будет рисовать. 
+        """ Отрисовка экрана с гексополем.
+        surf -  поверхность на которой нужно рисовать,
         Возвращает переданную поверхность или None. """
         if surf is None:
             surf_blit = self.surface.blit
         else:
             surf_blit = surf.blit
             
+        ## Выделенные гексы. 
         selected = self.select
-        sel_rect = self.select_rect 
-
-        for hex in self.selected:
+        sel_rect = self.select_rect
+        for hex in self.selected: 
             xy = self.area.center(hex)
             sel_rect.center = xy
             surf_blit( selected, sel_rect )
 
+        ## подсвеченный гекс
         surf_blit( self.solid, self.solid_rect )
-        
+
+        ## Рисуем планеты
         planets = self.planets.values()
         for planet in planets:
             planet.update()
@@ -96,48 +96,50 @@ class SCRHex:
 
     def input(self, event):
         """ Обработка событий. """
-        hex, hec_c = 0, 0
+        point = event.pos
+        hex = self.area.index(point)
         if event.type == pygame.MOUSEMOTION:
-            point = event.pos
-            hex = self.area.index(point)
-
-            if hex == (-1,-1):
-                self.solid_rect.center = (-100,-100)
-            else:
-                xy = self.area.center(hex)
-                self.solid_rect.center = xy
+            ## Гекс подсветки
+            ## if hex == (-1,-1):
+                ## self.solid_rect.center = (-100,-100)
+            ## else:
+                ## xy = self.area.center(hex)
+                ## self.solid_rect.center = xy
 
             ## INFO: Какой код всё-же лучше?
-            m_rect = pygame.Rect(point, (1,1))
-            cr = m_rect.colliderect
-            pls = self.planets.values()
-            for pl in pls:
-                pl.select = False
-                if cr(pl.rect):
-                    pl.select = True
+            ## m_rect = pygame.Rect(point, (1,1))
+            ## cr = m_rect.colliderect
+            ## pls = self.planets.values()
+            ## for pl in pls:
+                ## pl.select = False
+                ## if cr(pl.rect):
+                    ## pl.select = True
 
-            ## hex_c = self.area.index_circle(point, 30)
-            ## if hex_c != (-1,-1):
-                ## pos = self.area.nearestpoint(point, hex)
-                ## if pos in self.planets:
-                    ## self.planets[pos].select = True
-                    ## self.sel_planet = self.planets[pos]
-            ## else:
-                ## if self.sel_planet is not None:
-                    ## self.sel_planet.select = False
-                    ## self.sel_planet = None
+            ## Ближайшая планета
+            pos = self.area.nearestpoint(point, hex)
+            ## INFO: Тут константа!
+            if pos[0] and (pos[:2] in self.planets) and (pos[2] < 15):
+                if self.sel_planet is not None:
+                    self.sel_planet.select = False
+                self.sel_planet = self.planets[pos[:2]]
+                self.sel_planet.select = True
+
+            elif self.sel_planet is not None:
+                self.sel_planet.select = False
+                self.sel_planet = None
 
 
         elif event.type == pygame.MOUSEBUTTONUP:
-            point = event.pos
-            hex = self.area.index(point)
-            if hex == (-1,-1):
-                return
-            if hex in self.selected:
-                self.selected.remove(hex)
-            else:
-                self.selected.append(hex)
+            pass
+            ## Выделенные гексы
+            ## if hex == (-1,-1):
+                ## return
+            ## if hex in self.selected:
+                ## self.selected.remove(hex)
+            ## else:
+                ## self.selected.append(hex)
 
+            ## Поиск пути
             ## if self.h1 == (-1,-1):
                 ## self.h1 = hex
             ## else:
