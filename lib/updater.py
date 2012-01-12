@@ -1,14 +1,14 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
+
+import pygame
 
 MainUpdater = None
 
-
-class Singleton(object):
-  def __new__(cls, *args, **kw):
-      if not hasattr(cls, '_instance'):
-        orig = super(Singleton, cls)
-        cls._instance = orig.__new__(cls, *args, **kw)
-      return cls._instance
+def get_updater():
+    global MainUpdater
+    if MainUpdater == None:
+        MainUpdater = Updater()
+    return MainUpdater
 
 
 class Updater(object):
@@ -17,21 +17,10 @@ class Updater(object):
     list_o = {}
     list_f = {}
     
-    def __init__(self, interval=100, newupdater=False):
+    def __init__(self, interval=100):
         """ Инициализация """
-        global MainUpdater
-
-        print "mainUpdater:", MainUpdater
-
-        if newupdater:
-            print "NEW"
-
-        if MainUpdater == None:
-            print "Created"
-            MainUpdater = self
-        else:
-            print "Not created"
-            return None
+        pygame.time.set_timer(pygame.USEREVENT, interval)
+        self.interval = interval
 
 
     def add_obj(self, obj, interval):
@@ -44,18 +33,29 @@ class Updater(object):
         list_func[func] = [interval, interval]
 
 
+    def rem_obj(self, obj, interval):
+        """ Удаление объекта """
+        list_o.remove(obj)
+
+
+    def rem_func(self, func, interval):
+        """ Удаление функции """
+        list_func.remove(func)
+
+
     def tick(self):
         """ Обновление """
+        interval = self.interval
         for obj in list_o:
-            if list_o[obj][1] == 0:
+            if list_o[obj][1] <= 0:
                 list_o[obj][1] = list_o[obj][0]
                 obj.tick()
             else:
-                list_o[obj][1] -= 1
+                list_o[obj][1] -= interval
 
         for func in list_f:
-            if list_f[func][1] == 0:
+            if list_f[func][1] <= 0:
                 list_f[func][1] = list_f[func][0]
                 func()
             else:
-                list_f[func][1] -= 1
+                list_f[func][1] -= interval

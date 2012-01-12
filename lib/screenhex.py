@@ -106,15 +106,6 @@ class SCRHex:
                 ## xy = self.area.center(hex)
                 ## self.solid_rect.center = xy
 
-            ## INFO: Какой код всё-же лучше?
-            ## m_rect = pygame.Rect(point, (1,1))
-            ## cr = m_rect.colliderect
-            ## pls = self.planets.values()
-            ## for pl in pls:
-                ## pl.select = False
-                ## if cr(pl.rect):
-                    ## pl.select = True
-
             ## Ближайшая планета
             pos = self.area.nearestpoint(point, hex)
             ## INFO: Тут константа!

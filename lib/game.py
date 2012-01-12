@@ -2,6 +2,7 @@
 
 from resources import *
 import screenhex
+import updater
 
 ## FIXME: Проверить ещё разок здесь всё.
 
@@ -35,6 +36,7 @@ class Game:
         self.screen = screen
 
         self.clock = pygame.time.Clock()
+        self.update = updater.Updater(50)
 
         ## Создаём планеты
         planets = {}
@@ -82,6 +84,8 @@ class Game:
             #print event
             if (event.type == pygame.QUIT) or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                 self.abort = True
+            elif event.type == pygame.USEREVENT:
+                self.update.update()
             elif event.type == pygame.MOUSEBUTTONUP:
                 self.scr_h.input(event)
             elif event.type == pygame.MOUSEBUTTONDOWN:
