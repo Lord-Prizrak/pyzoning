@@ -3,6 +3,7 @@
 from resources import *
 import screenhex
 import updater
+from planet import Planet
 
 ## FIXME: Проверить ещё разок здесь всё.
 
@@ -35,8 +36,14 @@ class Game:
         pygame.display.flip()
         self.screen = screen
 
-        self.clock = pygame.time.Clock()
-        self.update = updater.Updater(50)
+        self.font = pygame.font.Font(None, 20)
+
+        self.update = updater.Updater(20)
+
+        self.draw_count = 0
+        self.update.add_func(self.redraw, 100)
+        self.update.add_func(self.getfps, 1000) # А нам чаще и не нужно!
+        self.getfps()
 
         ## Создаём планеты
         planets = {}
@@ -72,30 +79,28 @@ class Game:
     def start(self):
         """ Основной цикл. """
         while not self.abort:
-            self.clock.tick( 60 )
             self.checkevent()
-            self.redraw()
-            pygame.display.flip()
+        print "Quit - OK"
 
 
     def checkevent(self):
         """ Проверка событий. """
         for event in pygame.event.get():
-            #print event
-            if (event.type == pygame.QUIT) or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
-                self.abort = True
-            elif event.type == pygame.USEREVENT:
-                self.update.update()
+            if event.type == pygame.USEREVENT:
+                self.update.tick()
             elif event.type == pygame.MOUSEBUTTONUP:
                 self.scr_h.input(event)
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 self.scr_h.input(event)
             elif event.type == pygame.MOUSEMOTION:
                 self.scr_h.input(event)
-            elif (event.type == pygame.QUIT) or (event.type == pygame.KEYDOWN and event.key == pygame.K_PRINT):
+            elif (event.type == pygame.KEYDOWN) and (event.key == pygame.K_PRINT):
                 self.redraw()
                 pygame.image.save(self.screen, "screeshot.png")
-                print "Save"
+                print "MSG SAVE"
+            elif (event.type == pygame.QUIT) or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+                print "MSG QUIT"
+                self.abort = True
 
 
     def redraw(self):
@@ -104,6 +109,13 @@ class Game:
         self.scr_h.draw()
 
         ## FPS
-        font = pygame.font.Font(None, 20)
-        text = font.render( str(self.clock.get_fps())+" "+str(self.clock.get_time()), 1, (250, 250, 250) )
-        self.screen.blit(text, (10,self.SCREEN_SIZE[1]-20))
+        ## TODO: Переделать нужно в будующем
+        self.screen.blit( self.fpsSurf, (10,10) )
+        self.draw_count += 1
+
+        pygame.display.flip()
+
+
+    def getfps(self):
+        self.fpsSurf = self.font.render( str(self.draw_count), 1, (250, 250, 250) )
+        self.draw_count = 0

@@ -25,37 +25,40 @@ class Updater(object):
 
     def add_obj(self, obj, interval):
         """ Добавление объекта """
-        list_o[obj] = [interval, interval]
+        self.list_o[obj] = [interval, interval]
 
 
     def add_func(self, func, interval):
         """ Добавление функции """
-        list_func[func] = [interval, interval]
+        self.list_f[func] = [interval, interval]
 
 
     def rem_obj(self, obj, interval):
         """ Удаление объекта """
-        list_o.remove(obj)
+        self.list_o.remove(obj)
 
 
     def rem_func(self, func, interval):
         """ Удаление функции """
-        list_func.remove(func)
+        self.list_f.remove(func)
 
 
     def tick(self):
         """ Обновление """
         interval = self.interval
+        list_o = self.list_o
+        list_f = self.list_f
+
         for obj in list_o:
             if list_o[obj][1] <= 0:
                 list_o[obj][1] = list_o[obj][0]
                 obj.tick()
-            else:
-                list_o[obj][1] -= interval
+            list_o[obj][1] -= interval
 
         for func in list_f:
             if list_f[func][1] <= 0:
                 list_f[func][1] = list_f[func][0]
+                t1 = time()
                 func()
-            else:
-                list_f[func][1] -= interval
+                t2 = time()
+            list_f[func][1] -= interval
