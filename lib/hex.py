@@ -82,12 +82,6 @@ class Hex:
             sett = self.S
 
         x, y = self.center(hex, Sett)
-        ## path  = [[round(x), round(y - sett.orad)]]
-        ## path += [[round(x + sett.vrad), round(y - sett.orad2)]]
-        ## path += [[round(x + sett.vrad), round(y + sett.orad2)]]
-        ## path += [[round(x), round(y + sett.orad)]]
-        ## path += [[round(x - sett.vrad), round(y + sett.orad2)]]
-        ## path += [[round(x - sett.vrad), round(y - sett.orad2)]]
 
         path  = [[x, y - sett.orad]]
         path += [[x + sett.vrad, y - sett.orad2]]
@@ -396,7 +390,7 @@ def example_main():
             if event.type == pygame.MOUSEMOTION:
                 point = event.pos
                 hex = pole.index(point)
-                
+
                 ## Выделенный гекс
                 if hex:
                     xy = pole.center(hex)
@@ -433,7 +427,6 @@ def example_main():
             select_rect.center = xy
             screen.blit(select, select_rect)
 
-        
         circle(screen, (50,50,255), (int(px),int(py)), 10, 1) ## Кружочек ближайшей точки
         screen.blit(solid, solid_rect) ## Выделенный гекс
         pygame.display.flip() ## Обновили экран

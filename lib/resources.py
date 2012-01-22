@@ -7,7 +7,7 @@ import random
 DATA_DIR = "data"
 RES = None
 
-def loadres():
+def get_res():
     global RES
     if RES == None:
         RES = Resources()
@@ -52,6 +52,7 @@ class Resources:
             self.loaded_im[key] = surface
 
         return surface.convert()
+
 
     def scandata(self):
         """ Сканирует директорию с ресурсами """

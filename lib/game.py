@@ -1,6 +1,8 @@
 ﻿# -*- coding: utf-8 -*-
 
-from resources import *
+import pygame
+import random
+from resources import get_res
 import screenhex
 import updater
 from planet import Planet
@@ -21,7 +23,7 @@ class Game:
         будет затираться основная при каждом кадре. """
 
         ## Загрузчик ресурсов
-        resc = loadres()
+        resc = get_res()
 
         ## Готовим окошко
         pygame.init()
@@ -76,11 +78,11 @@ class Game:
         self.planets = planets
 
 
+
     def start(self):
         """ Основной цикл. """
         while not self.abort:
             self.checkevent()
-        print "Quit - OK"
 
 
     def checkevent(self):
@@ -97,9 +99,9 @@ class Game:
             elif (event.type == pygame.KEYDOWN) and (event.key == pygame.K_PRINT):
                 self.redraw()
                 pygame.image.save(self.screen, "screeshot.png")
-                print "MSG SAVE"
+                print "MSG: SAVE"
             elif (event.type == pygame.QUIT) or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
-                print "MSG QUIT"
+                print "MSG: QUIT"
                 self.abort = True
 
 

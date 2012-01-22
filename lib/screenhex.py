@@ -24,7 +24,7 @@ class SCRHex:
     hex2 = (0,0)
     selected = []
     sel_planet = None
-    
+
     h1 = (-1,-1)
 
     def __init__(self, surface):
@@ -73,7 +73,7 @@ class SCRHex:
             surf_blit = self.surface.blit
         else:
             surf_blit = surf.blit
-            
+
         ## Выделенные гексы. 
         selected = self.select
         sel_rect = self.select_rect

@@ -16,7 +16,7 @@ class Updater(object):
 
     list_o = {}
     list_f = {}
-    
+
     def __init__(self, interval=100):
         """ Инициализация """
         pygame.time.set_timer(pygame.USEREVENT, interval)
@@ -58,7 +58,5 @@ class Updater(object):
         for func in list_f:
             if list_f[func][1] <= 0:
                 list_f[func][1] = list_f[func][0]
-                t1 = time()
                 func()
-                t2 = time()
             list_f[func][1] -= interval

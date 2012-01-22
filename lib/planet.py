@@ -1,27 +1,32 @@
 ﻿# -*- coding: utf-8 -*-
 
-from resources import *
+import pygame
+from resources import get_res
 import screenhex
 import updater
 
 
 class Planet:
     """ Клас планеты. """
-    
+    ALL = []
+
     select = False
-    
+
     def __init__(self):
         """ Инициализируемся. """
-        resc = loadres()
+        resc = get_res()
         image = resc.rndImage("planet")
         self.image = pygame.transform.scale(image, (30,30) )
         self.image.set_colorkey( (0,0,0), pygame.RLEACCEL )
         self.rect = self.image.get_rect()
-        
+        Planet.ALL.append(self)
+
+
     def set_pos(self, pos):
         """ Устанавливаем позицию. В координатах основной поверхности! """
         self.rect.center = pos
-        
+
+
     def update(self):
         """ Обновляем объект. """
         if self.select:

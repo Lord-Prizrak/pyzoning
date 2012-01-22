@@ -28,6 +28,7 @@ class Button:
         """ Создание кнопки """
         self.rect = self.pict.get_rect()
 
+
     def setstate(self, state):
         """ Установка состояния кнопки """
         if state in BTN_STATE:
