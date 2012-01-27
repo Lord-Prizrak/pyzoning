@@ -78,7 +78,6 @@ class Game:
         self.planets = planets
 
 
-
     def start(self):
         """ Основной цикл. """
         while not self.abort:
@@ -87,7 +86,8 @@ class Game:
 
     def checkevent(self):
         """ Проверка событий. """
-        for event in pygame.event.get():
+        events = pygame.event.get()
+        for event in events:
             if event.type == pygame.USEREVENT:
                 self.update.tick()
             elif event.type == pygame.MOUSEBUTTONUP:
@@ -98,7 +98,7 @@ class Game:
                 self.scr_h.input(event)
             elif (event.type == pygame.KEYDOWN) and (event.key == pygame.K_PRINT):
                 self.redraw()
-                pygame.image.save(self.screen, "screeshot.png")
+                pygame.image.save(self.screen, "screenshot.png")
                 print "MSG: SAVE"
             elif (event.type == pygame.QUIT) or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                 print "MSG: QUIT"

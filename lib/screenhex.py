@@ -119,7 +119,6 @@ class SCRHex:
                 self.sel_planet.select = False
                 self.sel_planet = None
 
-
         elif event.type == pygame.MOUSEBUTTONUP:
             pass
             ## Выделенные гексы

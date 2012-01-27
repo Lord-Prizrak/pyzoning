@@ -8,7 +8,6 @@ class Render:
     def __init__(self, screen):
         """ Инициализация """
         self.screen = screen
-        pass
 
 
     def add_obj(self, obj, lvl=5):
