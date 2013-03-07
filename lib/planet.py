@@ -1,21 +1,19 @@
 ﻿# -*- coding: utf-8 -*-
 
 import pygame
-from resources import get_res
-import screenhex
+import resources as res
 import updater
 
 
 class Planet:
     """ Клас планеты. """
-    ALL = []
 
+    ALL = []
     select = False
 
     def __init__(self):
         """ Инициализируемся. """
-        resc = get_res()
-        image = resc.rndImage("planet")
+        image = res.rndImage("planet")
         self.image = pygame.transform.scale(image, (30,30) )
         self.image.set_colorkey( (0,0,0), pygame.RLEACCEL )
         self.rect = self.image.get_rect()

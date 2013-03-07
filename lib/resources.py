@@ -5,68 +5,58 @@ import pygame
 import random
 
 DATA_DIR = "data"
-RES = None
+resources = {}
+loaded_im = {}
 
-def get_res():
-    global RES
-    if RES == None:
-        RES = Resources()
-    return RES
+def rndImage(restype=None):
+    """ Выдаём случайное изображение """
+    if restype == None:
+        pas = "data"
+    else:
+        pas = os.path.join("data", restype)
 
-
-class Resources:
-    """ Класс для работы с ресурсами """
-
-    resources = {}
-    loaded_im = {}
-
-    def __init__(self):
-        """ Инициализируем """
-        random.seed()
-        self.scandata()
+    random.seed()
+    name = random.choice( resources[pas].keys() )
+    return Image(name, restype)
 
 
-    def rndImage(self, restype=None):
-        """ Выдаём случайное изображение """
-        if restype == None:
-            pas = "data"
-        else:
-            pas = os.path.join("data", restype)
+def Image(name, restype=None):
+    """ Выдаём указанное изображение """
+    if restype == None:
+        restype = "data"
+    else:
+        restype = os.path.join("data", restype)
 
-        name = random.choice( self.resources[pas].keys() )
-        return self.Image(name, restype)
+    key = (restype, name)
+    try:
+        surface = loaded_im[key]
+    except KeyError:
+        surface = pygame.image.load( os.path.join(restype, name) )
+        loaded_im[key] = surface
 
-
-    def Image(self, name, restype=None):
-        """ Выдаём указанное изображение """
-        if restype == None:
-            restype = "data"
-        else:
-            restype = os.path.join("data", restype)
-
-        key = (restype, name)
-        try:
-            surface = self.loaded_im[key]
-        except KeyError:
-            surface = pygame.image.load( os.path.join(restype, name) )
-            self.loaded_im[key] = surface
-
-        return surface.convert()
+    return surface.convert()
 
 
-    def scandata(self):
-        """ Сканирует директорию с ресурсами """
+def scandata(data_dir=None):
+    """ Сканирует директорию с ресурсами """
+    if data_dir:
+        dirs = [data_dir]
+    else:
         dirs = [DATA_DIR]
-        for dirname in dirs:
-            files = os.listdir(dirname)
-            self.resources[dirname] = {}
+    
+    for dirname in dirs:
+        files = os.listdir(dirname)
+        resources[dirname] = {}
 
-            for name in files:
-                if os.path.isfile(os.path.join(dirname,name)):
-                    self.resources[dirname][name] = os.path.join(dirname,name)
+        for name in files:
+            if os.path.isfile(os.path.join(dirname,name)):
+                resources[dirname][name] = os.path.join(dirname,name)
 
-                if os.path.isdir(os.path.join(dirname,name)):
-                    dirs.append(os.path.join(dirname,name))
+            if os.path.isdir(os.path.join(dirname,name)):
+                dirs.append(os.path.join(dirname,name))
+
+
+scandata()
 
 
 #def load_image(file):
