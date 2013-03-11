@@ -5,6 +5,7 @@ import random
 import resources as res
 import screenhex
 import updater
+import eventer
 from planet import Planet
 
 ## FIXME: Скорость работы крайне низкая! Необходима оптимизация всего!
@@ -30,6 +31,7 @@ class Game:
         ##pygame.display.set_icon( res.Image('icon.png') )
         self.bgimage = res.Image("background.png")
         screen.blit( pygame.transform.scale(self.bgimage, self.SCREEN_SIZE), (0,0) )
+
         ## TODO: Поправить для множества экранов
         surf = screen.subsurface( screen.get_rect() )
         self.scr_h = screenhex.SCRHex( surf )
@@ -39,13 +41,10 @@ class Game:
 
         self.font = pygame.font.Font(None, 20)
 
-        updater.setinterval(20)
+        self.create_planet()
 
-        self.draw_count = 0
-        updater.add_func(self.redraw, 100)
-        updater.add_func(self.getfps, 1000) # А нам чаще и не нужно!
-        self.getfps()
 
+    def create_planet(self):
         ## Создаём планеты
         planets = {}
         hex_col = self.scr_h.hex_col
@@ -63,7 +62,7 @@ class Game:
             planet.set_pos( xy )
             planet.koord = koord
             planets[koord] = planet
-        
+
         # for i in xrange(hex_col):
         #     for j in xrange(hex_row):
         #         xys = polygon( (i,j) )
@@ -80,34 +79,32 @@ class Game:
 
     def start(self):
         """ Основной цикл. """
+
+        # eventer.add(pygame.USEREVENT, updater.tick)
+        eventer.add(pygame.QUIT, self.quit)
+        eventer.add(pygame.KEYDOWN, self.quit)
+        eventer.add(pygame.KEYDOWN, self.screenshot)
+        eventer.add(pygame.MOUSEMOTION, self.scr_h.input)
+        # eventer.add(pygame.MOUSEBUTTONUP, self.scr_h.input)
+        # eventer.add(pygame.MOUSEBUTTONDOWN, self.scr_h.input)
+
+        updater.add_func(self.redraw, 100)
+
+        clock = pygame.time.Clock()
+        process = eventer.process
+        getevent = pygame.event.get
+        updatertick = updater.tick
+
         while not self.abort:
-            self.checkevent()
+            ms = clock.tick( 100 ) # итераций в секунду
 
+            updatertick(ms)
 
-    def checkevent(self):
-        """ Проверка событий. """
-        events = pygame.event.get()
-        for event in events:
-            if event.type == pygame.USEREVENT:
-                updater.tick()
+            events = getevent()
+            if len(events) > 0:
+                process(events)
 
-            elif event.type == pygame.MOUSEBUTTONUP:
-                self.scr_h.input(event)
-
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                self.scr_h.input(event)
-
-            elif event.type == pygame.MOUSEMOTION:
-                self.scr_h.input(event)
-
-            elif (event.type == pygame.KEYDOWN) and (event.key == pygame.K_PRINT):
-                self.redraw()
-                pygame.image.save(self.screen, "screenshot.png")
-                print "MSG: SAVE"
-
-            elif (event.type == pygame.QUIT) or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
-                print "MSG: QUIT"
-                self.abort = True
+            # print "--------------------------------------------------------------------------------"
 
 
     def redraw(self):
@@ -115,14 +112,21 @@ class Game:
         self.screen.blit( self.background, (0,0) )
         self.scr_h.draw()
 
-        ## FPS
-        ## TODO: Переделать нужно в будущем
-        self.screen.blit( self.fpsSurf, (10,10) )
-        self.draw_count += 1
-
         pygame.display.flip()
 
 
-    def getfps(self):
-        self.fpsSurf = self.font.render( str(self.draw_count), 1, (250, 250, 250) )
-        self.draw_count = 0
+    def quit(self, event):
+        ## FIXME: Некрасиво!
+        if (event.type == pygame.QUIT) or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+            print "MSG: QUIT"
+            self.abort = True
+
+
+    def screenshot(self, event):
+        """ Создаёт снимок экрана """
+        if event.key != pygame.K_PRINT:
+            return
+
+        self.redraw()
+        pygame.image.save(self.screen, "screenshot.png")
+        print "MSG: SAVE"

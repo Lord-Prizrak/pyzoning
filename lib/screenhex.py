@@ -99,12 +99,12 @@ class SCRHex:
         point = event.pos
         hex = self.area.index(point)
         if event.type == pygame.MOUSEMOTION:
-            ## Гекс подсветки
-            ## if hex == (-1,-1):
-                ## self.solid_rect.center = (-100,-100)
-            ## else:
-                ## xy = self.area.center(hex)
-                ## self.solid_rect.center = xy
+            # Гекс подсветки
+            # if hex == (-1,-1):
+            #     self.solid_rect.center = (-100,-100)
+            # else:
+            #     xy = self.area.center(hex)
+            #     self.solid_rect.center = xy
 
             ## Ближайшая планета
             pos = self.area.nearestpoint(point, hex)
@@ -119,23 +119,22 @@ class SCRHex:
                 self.sel_planet.select = False
                 self.sel_planet = None
 
-        elif event.type == pygame.MOUSEBUTTONUP:
-            pass
-            ## Выделенные гексы
-            ## if hex == (-1,-1):
-                ## return
-            ## if hex in self.selected:
-                ## self.selected.remove(hex)
-            ## else:
-                ## self.selected.append(hex)
+        # elif event.type == pygame.MOUSEBUTTONUP:
+        #     # Выделенные гексы
+        #     if hex == (-1,-1):
+        #         return
+        #     if hex in self.selected:
+        #         self.selected.remove(hex)
+        #     else:
+        #         self.selected.append(hex)
 
-            ## Поиск пути
-            ## if self.h1 == (-1,-1):
-                ## self.h1 = hex
-            ## else:
-                ## path = self.area.path_no_barriers(self.h1,hex)
-                ## self.h1 = (-1,-1)
-                ## self.selected = path
+        #     # Поиск пути
+        #     if self.h1 == (-1,-1):
+        #         self.h1 = hex
+        #     else:
+        #         path = self.area.path_no_barriers(self.h1,hex)
+        #         self.h1 = (-1,-1)
+        #         self.selected = path
 
 
     def setplanet(self, planets):

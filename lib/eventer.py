@@ -1,33 +1,32 @@
 ﻿# -*- coding: utf-8 -*-
+""" Модуль для обработки событий """
 
 import pygame
 
-MainEventer = None
 
-def get_eventer():
-    global MainEventer
-    if MainEventer == None:
-        MainEventer = Eventer()
-    return MainEventer
+list_event = {}
 
 
-class Eventer(object):
-    """ Объект занимающийся обработкой событий """
-    list_event = {"ALL":[]}
+def add(event, func):
+    """ Добавление функции """
+    if not event in list_event:
+        list_event[event] = []
 
-    def add(self, event, func):
-        """ Добавление функции """
-        self.list_event[event] += [func]
-
-
-    def remove(self, event, func):
-        """ Удаление функции """
-        self.list_event[event].remove(func)
+    list_event[event].append(func)
 
 
-    def event(self, event):
-        if not(event in list_event):
-            return
+def remove(event, func):
+    """ Удаление функции """
+    list_event[event].remove(func)
 
-        for func in list_event[event]:
-            func()
+
+def procevent(event):
+    for func in list_event[event.type]:
+        func(event)
+
+
+def process(events):
+    """ Обработка событий. """
+    for event in events:
+        if event.type in list_event:
+            procevent(event)
