@@ -2,11 +2,11 @@
 
 import pygame
 import random
-import resources as res
-import screenhex
-import updater
-import eventer
-from planet import Planet
+from . import resources as res
+from . import screenhex
+from . import updater
+from . import eventer
+from .planet import Planet
 
 ## FIXME: Скорость работы крайне низкая! Необходима оптимизация всего!
 ## FIXME: Проверить ещё разок здесь всё.
@@ -51,7 +51,7 @@ class Game:
         hex_row = self.scr_h.hex_row
         polygon = self.scr_h.area.polygon
 
-        for x in xrange(10):
+        for x in range(10):
             i = random.randint(0,hex_col-1)
             j = random.randint(0,hex_row-1)
             p = random.randint(0,5)
@@ -118,7 +118,7 @@ class Game:
     def quit(self, event):
         ## FIXME: Некрасиво!
         if (event.type == pygame.QUIT) or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
-            print "MSG: QUIT"
+            print("MSG: QUIT")
             self.abort = True
 
 
@@ -129,4 +129,4 @@ class Game:
 
         self.redraw()
         pygame.image.save(self.screen, "screenshot.png")
-        print "MSG: SAVE"
+        print("MSG: SAVE")

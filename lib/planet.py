@@ -1,8 +1,8 @@
 ﻿# -*- coding: utf-8 -*-
 
 import pygame
-import resources as res
-import updater
+from . import resources as res
+from . import updater
 
 
 class Planet:

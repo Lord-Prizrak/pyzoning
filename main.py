@@ -11,12 +11,12 @@ def main():
     for line in fd:
         if line.startswith("changeset"):
             revision = line[len("changeset:"):].strip()
-            print "Revision:", revision
+            print(("Revision:", revision))
     fd.close()
 
     g=Game()
     g.start()
-    print "Quit."
+    print("Quit.")
     return 0
 
 

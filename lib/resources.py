@@ -16,7 +16,7 @@ def rndImage(restype=None):
         pas = os.path.join("data", restype)
 
     random.seed()
-    name = random.choice( resources[pas].keys() )
+    name = random.choice( list(resources[pas].keys()) )
     return Image(name, restype)
 
 

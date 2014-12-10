@@ -3,7 +3,7 @@
 import random
 import pygame
 import pygame.gfxdraw as gfx
-import hex
+from . import hex
 
 ## FIXME: Внимательно пересмотреть ВСЁ здесь.
 
@@ -55,8 +55,8 @@ class SCRHex:
         # отрисовка задника
         line = pygame.draw.line
         font = pygame.font.Font(None, 20)
-        for i in xrange(self.hex_col):
-            for j in xrange(self.hex_row):
+        for i in range(self.hex_col):
+            for j in range(self.hex_row):
                 x, y = self.area.center( (i,j) )
                 points = self.area.polygon( (i,j) )
                 gfx.aapolygon(surface, points, C_WHITE)
@@ -86,7 +86,7 @@ class SCRHex:
         surf_blit( self.solid, self.solid_rect )
 
         ## Рисуем планеты
-        planets = self.planets.values()
+        planets = list(self.planets.values())
         for planet in planets:
             planet.update()
             surf_blit( planet.image, planet.rect )
